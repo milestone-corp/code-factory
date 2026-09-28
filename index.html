@@ -6,7 +6,7 @@
 <title>コード工場</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;600&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;600;700&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap">
 <style>
 :root{
   --bg:#E7EAE3; --panel:#F6F7F2; --ink:#1E272B; --muted:#5B676A; --line:#C9D0C6;
@@ -17,7 +17,9 @@
   --robot:#F2C230; --robot-edge:#A77F0B;
   --c-assign:#2F6FD6; --c-print:#1F9357; --c-loop:#D9801A; --c-if:#8452D0; --c-other:#66737A;
   --danger:#D33F3F; --focus:#2F6FD6;
-  --wood:#B9793F; --wood-bg:#F4E6D6;
+  --wood:#B9793F; --wood-dark:#8E5A2C; --wood-bg:#F4E6D6;
+  --room:#E9E1D0; --wall:#8C7B63; --plate:#FFF9EA; --shelf:#7D8791; --slot:#F3EEE2;
+  --item:#FFE08A; --item-edge:#C79A1E; --item-ink:#3B2A12;
   --hl-on:rgba(242,194,48,.42); --hl-err:rgba(211,63,63,.22); --hl-pick:rgba(47,111,214,.18);
 }
 @media (prefers-color-scheme: dark){
@@ -30,7 +32,9 @@
     --machine:#262D33; --shadow:rgba(0,0,0,.45);
     --c-assign:#5C94F2; --c-print:#3DBB78; --c-loop:#F0A043; --c-if:#A67DF2; --c-other:#8A969C;
     --danger:#F06A6A; --focus:#5C94F2;
-    --wood:#C98B4B; --wood-bg:#3A2E24;
+    --wood:#C98B4B; --wood-dark:#8A5A2E; --wood-bg:#3A2E24;
+    --room:#2A2621; --wall:#6B5D4B; --plate:#3B352B; --shelf:#6A737C; --slot:#221F1B;
+    --item:#EFC75E; --item-edge:#A77F0B; --item-ink:#2A1E0C;
     --hl-on:rgba(242,194,48,.28); --hl-err:rgba(240,106,106,.25); --hl-pick:rgba(92,148,242,.22);
   }
 }
@@ -43,12 +47,14 @@
   --machine:#262D33; --shadow:rgba(0,0,0,.45);
   --c-assign:#5C94F2; --c-print:#3DBB78; --c-loop:#F0A043; --c-if:#A67DF2; --c-other:#8A969C;
   --danger:#F06A6A; --focus:#5C94F2;
-  --wood:#C98B4B; --wood-bg:#3A2E24;
+  --wood:#C98B4B; --wood-dark:#8A5A2E; --wood-bg:#3A2E24;
+  --room:#2A2621; --wall:#6B5D4B; --plate:#3B352B; --shelf:#6A737C; --slot:#221F1B;
+  --item:#EFC75E; --item-edge:#A77F0B; --item-ink:#2A1E0C;
   --hl-on:rgba(242,194,48,.28); --hl-err:rgba(240,106,106,.25); --hl-pick:rgba(92,148,242,.22);
 }
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:"M PLUS Rounded 1c",system-ui,"Hiragino Maru Gothic ProN",sans-serif;font-size:14px}
-.app{box-sizing:border-box;max-width:1640px;margin:0 auto;padding-inline:16px;padding-block:14px 18px;display:flex;flex-direction:column;gap:12px;min-height:100%}
+.app{box-sizing:border-box;max-width:1680px;margin:0 auto;padding-inline:16px;padding-block:14px 18px;display:flex;flex-direction:column;gap:12px;min-height:100%}
 .top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px}
 .brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 .brand h1{font-family:"Dela Gothic One","M PLUS Rounded 1c",sans-serif;font-weight:400;font-size:28px;margin:0;letter-spacing:.03em}
@@ -67,7 +73,7 @@ button.primary{background:var(--robot);color:#1E272B;border:2px solid var(--robo
 .speed output{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;min-width:3.2em;font-variant-numeric:tabular-nums}
 input[type=range]{accent-color:var(--robot-edge);width:110px}
 
-.grid{display:grid;grid-template-columns:minmax(250px,330px) minmax(0,1fr) 270px;gap:12px;height:clamp(540px,calc(100vh - 100px),920px)}
+.grid{display:grid;grid-template-columns:minmax(250px,320px) minmax(0,1fr) 220px;gap:12px;height:clamp(540px,calc(100vh - 100px),920px)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0;min-width:0}
 .ph{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 8px;flex-wrap:wrap}
 .ph h2{margin:0;font-size:15px;font-weight:800;letter-spacing:.04em}
@@ -101,42 +107,26 @@ input[type=range]{accent-color:var(--robot-edge);width:110px}
 .follow{display:flex;align-items:center;gap:6px;margin:6px 12px 10px;color:var(--muted);font-size:12px}
 
 .side{display:flex;flex-direction:column;gap:12px;min-height:0}
-.side .panel:first-child{flex:1.3}
-.side .panel:last-child{flex:1}
-.vars{padding:0 10px 10px;overflow:auto;display:flex;flex-direction:column;gap:8px;flex:1;min-height:0}
-.empty{color:var(--muted);font-size:13px;line-height:1.6}
-.crate{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;background:var(--wood-bg);border:2px solid var(--wood)}
-.vname{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:600;font-size:13px;color:var(--muted)}
-.vval{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:18px;font-weight:600;margin-left:auto;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;text-align:right}
-.rack{padding:6px 8px 8px;border-radius:6px;border:2px dashed var(--wood)}
-.rack .vname{display:block;margin-bottom:5px}
-.rack .vname small{font-weight:400;margin-left:6px}
-.cells{display:flex;flex-wrap:wrap;gap:4px}
-.cell{min-width:36px;border:2px solid var(--wood);border-radius:4px;background:var(--wood-bg);text-align:center;font-family:"JetBrains Mono",ui-monospace,monospace}
-.cell i{display:block;font-style:normal;font-size:10px;color:var(--muted);border-bottom:1px solid var(--wood);padding:1px 0}
-.cell b{display:block;padding:3px 5px;font-size:15px;font-variant-numeric:tabular-nums}
-.flash{animation:pop .7s ease-out}
-.touch{outline:3px solid var(--c-assign);outline-offset:1px}
-@keyframes pop{0%{transform:scale(1.12);box-shadow:0 0 0 5px var(--robot)}100%{transform:none;box-shadow:0 0 0 0 transparent}}
+.side .panel{flex:1}
 .out{list-style:none;margin:0;padding:0 10px 10px;overflow:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:6px}
 .out li{font-family:"JetBrains Mono",ui-monospace,monospace;padding:6px 10px;background:var(--wood-bg);border-left:4px solid var(--c-print);border-radius:4px;animation:slidein .4s ease-out;overflow-wrap:anywhere}
+.out .empty{color:var(--muted);font-size:13px;line-height:1.6;background:none;border:0;padding:0;font-family:inherit;animation:none}
 @keyframes slidein{from{transform:translateX(18px);opacity:0}to{transform:none;opacity:1}}
 
 @media (max-width:1180px){
-  .grid{grid-template-columns:minmax(230px,310px) minmax(0,1fr);height:auto}
-  .code-panel,.factory-panel{height:660px}
-  .side{grid-column:1/-1;flex-direction:row}
-  .side .panel{flex:1;min-height:220px;max-height:340px}
+  .grid{grid-template-columns:minmax(230px,300px) minmax(0,1fr);height:auto}
+  .code-panel,.factory-panel{height:680px}
+  .side{grid-column:1/-1}
+  .side .panel{height:220px}
 }
 @media (max-width:760px){
   .grid{grid-template-columns:minmax(0,1fr)}
   .code-panel{height:380px}
-  .factory-panel{height:72vh}
-  .side{flex-direction:column}
+  .factory-panel{height:74vh}
   .brand h1{font-size:24px}
 }
 @media (prefers-reduced-motion: reduce){
-  .flash,.out li{animation:none}
+  .out li{animation:none}
 }
 </style>
 </head>
@@ -186,12 +176,13 @@ input[type=range]{accent-color:var(--robot-edge);width:110px}
     <section class="panel factory-panel">
       <div class="ph">
         <h2>工場</h2>
-        <div class="legend" aria-label="機械の色">
+        <div class="legend" aria-label="工場の見方">
           <span><i style="background:var(--c-assign)"></i>しまう機（変数）</span>
           <span><i style="background:var(--c-print)"></i>出荷機（print）</span>
           <span><i style="background:var(--c-loop)"></i>くりかえし（for / while）</span>
           <span><i style="background:var(--c-if)"></i>分かれ道（if）</span>
-          <span><i style="background:var(--robot)"></i>ロボット＝いま実行中</span>
+          <span><i style="background:var(--wood)"></i>倉庫の木箱＝変数・棚＝配列</span>
+          <span><i style="background:var(--item)"></i>品物＝データ</span>
         </div>
       </div>
       <div id="narr" class="narr" aria-live="polite"></div>
@@ -200,7 +191,6 @@ input[type=range]{accent-color:var(--robot-edge);width:110px}
     </section>
 
     <aside class="side">
-      <section class="panel"><div class="ph"><h2>倉庫</h2><span class="hint">変数の箱と配列の棚</span></div><div id="vars" class="vars"></div></section>
       <section class="panel"><div class="ph"><h2>出荷口</h2><span class="hint">print の結果</span></div><ol id="out" class="out"></ol></section>
     </aside>
   </main>
@@ -411,8 +401,7 @@ function parseProgram(src) {
     }
     return { type: 'expr', e, line, src: t };
   }
-  const prog = { body: block(0) };
-  return prog;
+  return { body: block(0) };
 }
 
 // ============ 値と計算 ============
@@ -429,6 +418,7 @@ const shortRep = v => { const s = rep(v); return s.length > 30 ? s.slice(0, 28) 
 const truthy = v => Array.isArray(v) ? v.length > 0 : !!v;
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const isN = x => typeof x === 'number' || typeof x === 'boolean';
+const clone = v => Array.isArray(v) ? JSON.parse(JSON.stringify(v)) : v;
 
 function binop(op, a, b, line) {
   switch (op) {
@@ -475,16 +465,19 @@ const BUILTINS = {
   sum(a, line) { if (!Array.isArray(a[0])) throw new CodeError(line, 'sum( ) には配列を入れてね'); return a[0].reduce((s, x) => binop('+', s, x, line), 0); },
 };
 
+function getVar(n, S) {
+  if (!S.env.has(n)) {
+    if (BUILTINS[n]) throw new CodeError(S.line, `${n} は ${n}(...) のように使ってね`);
+    throw new CodeError(S.line, `「${n}」という箱は、まだ倉庫にないよ（先に ${n} = ... でしまってね）`);
+  }
+  return S.env.get(n);
+}
+// S.reads に「倉庫のどこから品物を持ち出したか」を記録する（アニメーション用）
 function ev(e, S) {
   switch (e.k) {
     case 'num': case 'str': case 'bool': return e.v;
     case 'list': return e.items.map(x => ev(x, S));
-    case 'name':
-      if (!S.env.has(e.n)) {
-        if (BUILTINS[e.n]) throw new CodeError(S.line, `${e.n} は ${e.n}(...) のように使ってね`);
-        throw new CodeError(S.line, `「${e.n}」という箱は、まだ倉庫にないよ（先に ${e.n} = ... でしまってね）`);
-      }
-      return S.env.get(e.n);
+    case 'name': { const v = getVar(e.n, S); S.reads.push({ n: e.n, v: clone(v) }); return v; }
     case 'un': {
       const a = ev(e.a, S);
       if (e.op === 'not') return !truthy(a);
@@ -497,12 +490,14 @@ function ev(e, S) {
       return binop(e.op, ev(e.a, S), ev(e.b, S), S.line);
     }
     case 'idx': {
-      const a = ev(e.a, S), i = ev(e.i, S);
+      const a = e.a.k === 'name' ? getVar(e.a.n, S) : ev(e.a, S);
+      const i = ev(e.i, S);
       if (!Array.isArray(a) && typeof a !== 'string') throw new CodeError(S.line, '[ ] で取り出せるのは配列か文字だけだよ');
       if (!Number.isInteger(i)) throw new CodeError(S.line, '[ ] の中は整数にしてね');
       const j = i < 0 ? a.length + i : i;
       if (j < 0 || j >= a.length) throw new CodeError(S.line, a.length ? `${show(e.a, null)}[${i}] は無いよ（0 〜 ${a.length - 1} 番まで）` : `${show(e.a, null)} は空っぽだよ`);
-      if (e.a.k === 'name') S.touched.push({ n: e.a.n, i: j });
+      if (e.a.k === 'name' && Array.isArray(a)) S.reads.push({ n: e.a.n, i: j, v: clone(a[j]) });
+      else if (e.a.k === 'name') S.reads.push({ n: e.a.n, v: a });
       return a[j];
     }
     case 'call': {
@@ -527,7 +522,7 @@ function show(e, S) {
     const xp = x.k === 'bin' ? PREC[x.op] : (x.k === 'un' && x.op === 'not') ? 3 : 9;
     return (xp < p || (right && xp === p)) ? `(${s})` : s;
   };
-  const tryVal = x => { try { return shortRep(ev(x, { env: S.env, touched: [], line: 0 })); } catch (_) { return null; } };
+  const tryVal = x => { try { return shortRep(ev(x, { env: S.env, reads: [], line: 0 })); } catch (_) { return null; } };
   switch (e.k) {
     case 'num': return fmtNum(e.v);
     case 'str': return `"${e.v}"`;
@@ -604,7 +599,7 @@ function placeStmt(s, cx, y, belts) {
       exit: [[cx + s.w / 2, center[1]], [laneR, center[1]], [laneR, exitY], [cx, exitY]],
       bottom: [cx, exitY],
     };
-    s.frame = { x: cx - s.ext.l + 2, y: y - 12, w: s.ext.l + s.ext.r - 4, h: loopBottom + 14 - (y - 12) };
+    s.frame = { x: cx - s.ext.l + 2, y: y - 12, w: s.ext.l + s.ext.r - 4, h: loopBottom + 14 - (y - 12), cx };
     belts.push(s.L.enter, s.L.ret, s.L.exit);
     return exitY;
   }
@@ -657,6 +652,7 @@ function layoutProgram(prog) {
 }
 
 // ============ 実行（1ステップずつ出来事を出す） ============
+// act の reads = 倉庫から持ち出す品物、writes = 倉庫へしまう品物
 function* runProgram(prog, S) {
   yield { t: 'move', pts: [prog.startBottom, prog.body[0].L.top] };
   yield* runBlock(prog.body, S);
@@ -670,7 +666,7 @@ function* runBlock(stmts, S) {
   }
 }
 function count(S, line) { if (++S.steps > 1200) throw new CodeError(line, 'くりかえしが多すぎるよ（終わらないループになっていない？）'); }
-const C = (S, line) => ({ env: S.env, touched: [], line });
+const C = (S, line) => ({ env: S.env, reads: [], line });
 
 function* runStmt(s, S) {
   const env = S.env;
@@ -683,12 +679,14 @@ function* runStmt(s, S) {
       if (s.op !== '=') {
         if (!env.has(s.n)) throw new CodeError(s.line, `「${s.n}」という箱は、まだ倉庫にないよ`);
         const old = env.get(s.n);
+        cx.reads.unshift({ n: s.n, v: clone(old) });
         calc = `${shortRep(old)} ${s.op[0]} ${sub}`;
         v = binop(s.op[0], old, v, s.line);
       }
-      env.set(s.n, Array.isArray(v) && s.e.k === 'name' ? v : v);
+      env.set(s.n, v);
       const lit = s.op === '=' && ['num', 'str', 'bool', 'list'].includes(s.e.k);
-      yield { t: 'act', kind: 'assign', node: s, changed: [s.n], touched: cx.touched, bubble: `${s.n} ← ${shortRep(v)}`,
+      yield { t: 'act', kind: 'assign', node: s, reads: cx.reads, writes: [{ k: 'set', n: s.n, v: clone(v) }],
+        bubble: lit || s.e.k === 'name' ? null : `${calc} = ${shortRep(v)}`,
         text: lit ? `「${s.n}」の箱に ${shortRep(v)} をしまったよ` : `${calc} を計算して、答えの ${shortRep(v)} を「${s.n}」の箱にしまったよ` };
       yield { t: 'move', pts: [s.L.bottom] };
       break;
@@ -696,16 +694,15 @@ function* runStmt(s, S) {
     case 'setidx': {
       yield { t: 'move', pts: [s.L.center] }; count(S, s.line);
       const cx = C(S, s.line);
-      if (!env.has(s.n)) throw new CodeError(s.line, `「${s.n}」という棚は、まだ倉庫にないよ`);
-      const arr = env.get(s.n);
+      const arr = getVar(s.n, cx);
       if (!Array.isArray(arr)) throw new CodeError(s.line, `「${s.n}」は配列じゃないよ`);
       const i = ev(s.i, cx), v = ev(s.e, cx);
       if (!Number.isInteger(i)) throw new CodeError(s.line, '[ ] の中は整数にしてね');
       const j = i < 0 ? arr.length + i : i;
       if (j < 0 || j >= arr.length) throw new CodeError(s.line, `${s.n}[${i}] は無いよ（0 〜 ${arr.length - 1} 番まで）`);
       arr[j] = v;
-      yield { t: 'act', kind: 'assign', node: s, changed: [], cell: { n: s.n, i: j }, touched: cx.touched, bubble: `${s.n}[${j}] ← ${shortRep(v)}`,
-        text: `「${s.n}」の ${j}番の場所を ${shortRep(v)} に入れかえたよ` };
+      yield { t: 'act', kind: 'assign', node: s, reads: cx.reads, writes: [{ k: 'setidx', n: s.n, i: j, v: clone(v) }],
+        text: `「${s.n}」の ${j}番のマスを ${shortRep(v)} に入れかえたよ` };
       yield { t: 'move', pts: [s.L.bottom] };
       break;
     }
@@ -713,7 +710,7 @@ function* runStmt(s, S) {
       yield { t: 'move', pts: [s.L.center] }; count(S, s.line);
       const cx = C(S, s.line);
       const out = s.args.map(a => str(ev(a, cx))).join(' ');
-      yield { t: 'act', kind: 'print', node: s, out, touched: cx.touched, bubble: out, crate: true, text: `「${out}」を出荷口に送ったよ` };
+      yield { t: 'act', kind: 'print', node: s, out, reads: cx.reads, text: `「${out}」を出荷口に送ったよ` };
       yield { t: 'move', pts: [s.L.bottom] };
       break;
     }
@@ -725,7 +722,8 @@ function* runStmt(s, S) {
       if (!Array.isArray(arr)) throw new CodeError(s.line, `「${s.n}」は配列じゃないから append できないよ`);
       const v = ev(s.arg, cx);
       arr.push(v);
-      yield { t: 'act', kind: 'append', node: s, cell: { n: s.n, i: arr.length - 1 }, touched: cx.touched, bubble: `${s.n} に +${shortRep(v)}`,
+      yield { t: 'act', kind: 'append', node: s, reads: cx.reads, writes: [{ k: 'append', n: s.n, v: clone(v) }],
+        bubble: s.arg.k === 'name' || s.arg.k === 'num' ? null : `${show(s.arg, null)} = ${shortRep(v)}`,
         text: `「${s.n}」の棚の最後に ${shortRep(v)} をつめたよ（いま ${arr.length}個）` };
       yield { t: 'move', pts: [s.L.bottom] };
       break;
@@ -741,28 +739,28 @@ function* runStmt(s, S) {
       const cx = C(S, s.line);
       const sub = show(s.e, { env });
       const v = ev(s.e, cx);
-      yield { t: 'act', kind: 'expr', node: s, touched: cx.touched, bubble: shortRep(v), text: `${sub} を計算したら ${shortRep(v)} になったよ（でも、どこにもしまっていないよ）` };
+      yield { t: 'act', kind: 'expr', node: s, reads: cx.reads, bubble: shortRep(v), text: `${sub} を計算したら ${shortRep(v)} になったよ（でも、どこにもしまっていないよ）` };
       yield { t: 'move', pts: [s.L.bottom] };
       break;
     }
     case 'for': {
       yield { t: 'move', pts: [s.L.center] }; count(S, s.line);
-      let items = ev(s.iter, C(S, s.line));
+      const cx = C(S, s.line);
+      let items = ev(s.iter, cx);
       if (typeof items === 'string') items = [...items];
       if (!Array.isArray(items)) throw new CodeError(s.line, 'for の in のうしろには、配列か range(...) を書いてね');
       items = items.slice();
       const src = s.iter.k === 'name' ? s.iter.n : null;
       const label = show(s.iter, null);
       s.iterInfo = { i: 0, n: items.length };
-      yield { t: 'act', kind: 'loopStart', node: s, dur: 0.9,
+      yield { t: 'act', kind: 'loopStart', node: s, reads: src ? [] : cx.reads, dur: 0.9,
         text: items.length ? `${label} には ${items.length}個あるから、${items.length}回くりかえすよ` : `${label} は空っぽだから、1回もくりかえさないよ` };
       for (let k = 0; k < items.length; k++) {
         count(S, s.line);
         env.set(s.v, items[k]);
         s.iterInfo = { i: k + 1, n: items.length };
-        yield { t: 'act', kind: 'pick', node: s, changed: [s.v], touched: src ? [{ n: src, i: k }] : [], carry: `${s.v}=${shortRep(items[k])}`,
-          bubble: `${s.v} ← ${shortRep(items[k])}`,
-          text: src ? `${k + 1}回目: ${src} の ${k}番から ${shortRep(items[k])} を取り出して「${s.v}」の箱に入れたよ`
+        yield { t: 'act', kind: 'pick', node: s, pick: { src, i: k }, writes: [{ k: 'set', n: s.v, v: clone(items[k]) }], carry: `${s.v}=${shortRep(items[k])}`,
+          text: src ? `${k + 1}回目: 棚「${src}」の ${k}番から ${shortRep(items[k])} を取り出して「${s.v}」の箱に入れたよ`
                     : `${k + 1}回目: 「${s.v}」の箱に ${shortRep(items[k])} を入れたよ` };
         yield { t: 'move', pts: s.L.enter };
         yield* runBlock(s.body, S);
@@ -782,7 +780,7 @@ function* runStmt(s, S) {
         const r = truthy(ev(s.cond, cx));
         s.lastResult = r;
         s.iterInfo = { i: r ? k + 1 : k, n: null };
-        yield { t: 'act', kind: 'cond', node: s, result: r, touched: cx.touched, bubble: r ? 'True → もう一周' : 'False → おしまい',
+        yield { t: 'act', kind: 'cond', node: s, result: r, reads: cx.reads, bubble: r ? 'True → もう一周' : 'False → おしまい',
           text: `${sub} は ${r ? '正しい（True）' : '正しくない（False）'} → ${r ? `${k + 1}周目に入るよ` : 'くりかえし終わり'}` };
         if (!r) break;
         k++;
@@ -799,7 +797,7 @@ function* runStmt(s, S) {
       const sub = show(s.cond, { env });
       const r = truthy(ev(s.cond, cx));
       s.lastResult = r;
-      yield { t: 'act', kind: 'cond', node: s, result: r, touched: cx.touched, bubble: r ? 'はい（True）' : 'いいえ（False）',
+      yield { t: 'act', kind: 'cond', node: s, result: r, reads: cx.reads, bubble: r ? 'はい（True）' : 'いいえ（False）',
         text: `${sub} は ${r ? '正しい（True）' : '正しくない（False）'} → 「${r ? 'はい' : 'いいえ'}」の道へ進むよ` };
       if (r) { yield { t: 'move', pts: s.L.yes }; yield* runBlock(s.body, S); yield { t: 'move', pts: s.L.yesMerge.slice(1) }; }
       else if (s.orelse) { yield { t: 'move', pts: s.L.no }; yield* runBlock(s.orelse, S); yield { t: 'move', pts: s.L.noMerge.slice(1) }; }
@@ -809,10 +807,73 @@ function* runStmt(s, S) {
   }
 }
 
+// ============ 倉庫（工場の中に描く変数の置き場） ============
+// 表示用のモデル。env とは別に持ち、品物が箱に届いた瞬間に更新する
+const CELL = 38, CELL_GAP = 6;
+const WH = { slots: new Map() };
+function whEnsure(n, asList) {
+  let s = WH.slots.get(n);
+  if (!s) {
+    s = { n, list: !!asList, v: undefined, items: [], empty: true, x: null, y: null, born: performance.now(), flash: 0, cellFlash: new Map(), pending: false, dropped: null };
+    WH.slots.set(n, s);
+  }
+  return s;
+}
+function whPrepare(w) {
+  const s = whEnsure(w.n, Array.isArray(w.v));
+  if (w.k === 'append') s.pending = true;
+}
+function whApply(w) {
+  const now = performance.now();
+  const s = whEnsure(w.n, Array.isArray(w.v));
+  if (w.k === 'set') {
+    if (!s.empty && !s.list && !Array.isArray(w.v)) s.dropped = { v: s.v, t0: now };
+    if (Array.isArray(w.v)) { s.list = true; s.items = w.v.slice(); s.items.forEach((_, i) => s.cellFlash.set(i, now)); }
+    else { s.list = false; s.v = w.v; }
+  } else if (w.k === 'setidx') {
+    s.dropped = { v: s.items[w.i], t0: now, i: w.i };
+    s.items[w.i] = w.v; s.cellFlash.set(w.i, now);
+  } else if (w.k === 'append') {
+    s.items.push(w.v); s.pending = false; s.cellFlash.set(s.items.length - 1, now);
+  }
+  s.empty = false; s.flash = now;
+}
+function whLayout(W) {
+  const pad = 12, gap = 10, cw = (W - pad * 2 - gap) / 2, ch = 72;
+  let y = 42, col = 0;
+  for (const s of WH.slots.values()) {
+    if (s.list) {
+      if (col) { y += ch + gap; col = 0; }
+      s.per = Math.max(1, Math.floor((W - pad * 2 - 16 + CELL_GAP) / (CELL + CELL_GAP)));
+      const n = s.items.length + (s.pending ? 1 : 0);
+      const rows = Math.max(1, Math.ceil(n / s.per));
+      s.tw = W - pad * 2; s.th = 30 + rows * (CELL + 18) + 4; s.tx = pad; s.ty = y;
+      y += s.th + gap;
+    } else {
+      s.tw = cw; s.th = ch; s.tx = pad + col * (cw + gap); s.ty = y;
+      if (col) { y += ch + gap; col = 0; } else col = 1;
+    }
+    if (s.x === null) { s.x = s.tx; s.y = s.ty; }
+    else { s.x += (s.tx - s.x) * 0.2; s.y += (s.ty - s.y) * 0.2; }
+  }
+}
+// 倉庫の中の位置（キャンバス座標）。i を省くと箱／棚そのもの、'next' は棚の次の空きマス
+function whPos(n, i) {
+  const s = WH.slots.get(n);
+  if (!s || s.x === null) return { x: whX + WH_W / 2, y: whTop + 30 };
+  const bx = whX + s.x, by = whTop + s.y;
+  if (!s.list) return { x: bx + s.tw / 2, y: by + 46 };
+  if (i === undefined) return { x: bx + 44, y: by + 14 };
+  const k = i === 'next' ? s.items.length : i;
+  const c = k % s.per, r = Math.floor(k / s.per);
+  return { x: bx + 8 + c * (CELL + CELL_GAP) + CELL / 2, y: by + 30 + r * (CELL + 18) + CELL / 2 };
+}
+function dockPos() { return { x: whX + WH_W / 2, y: whTop + fscroll.clientHeight - 48 }; }
+
 // ============ 画面の状態 ============
 const $ = id => document.getElementById(id);
 const codeEl = $('code'), hlEl = $('hl'), errEl = $('err'), cv = $('cv'), ctx = cv.getContext('2d');
-const fscroll = $('fscroll'), narrEl = $('narr'), varsEl = $('vars'), outEl = $('out');
+const fscroll = $('fscroll'), narrEl = $('narr'), outEl = $('out');
 const runBtn = $('run'), stepBtn = $('step'), resetBtn = $('reset'), speedEl = $('speed'), speedV = $('speedv'), followEl = $('follow'), sampleEl = $('sample');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -839,24 +900,9 @@ function narr(text, line, err) {
   narrEl.className = 'narr' + (err ? ' err' : '');
   narrEl.innerHTML = (line ? `<span class="lnb">${line}行目</span>` : '') + `<span>${esc(text)}</span>`;
 }
-
-function renderVars(changed = [], touched = [], cell = null) {
-  const env = A.S ? A.S.env : new Map();
-  if (!env.size) { varsEl.innerHTML = '<p class="empty">まだ箱はないよ。<br><code>x = 3</code> のように書くと、ここに「x」という箱ができるよ。</p>'; return; }
-  const html = [];
-  for (const [n, v] of env) {
-    const ch = changed.includes(n);
-    if (Array.isArray(v)) {
-      const cells = v.slice(0, 40).map((x, i) => {
-        const t = touched.some(o => o.n === n && o.i === i), c = cell && cell.n === n && cell.i === i;
-        return `<div class="cell${t ? ' touch' : ''}${c ? ' flash' : ''}"><i>${i}</i><b>${esc(shortRep(x))}</b></div>`;
-      }).join('');
-      html.push(`<div class="rack${ch ? ' flash' : ''}"><span class="vname">${esc(n)}<small>配列・${v.length}個</small></span><div class="cells">${cells || '<span class="empty">空っぽ</span>'}</div></div>`);
-    } else {
-      html.push(`<div class="crate${ch ? ' flash' : ''}"><span class="vname">${esc(n)}</span><span class="vval">${esc(shortRep(v))}</span></div>`);
-    }
-  }
-  varsEl.innerHTML = html.join('');
+function addOut(text) {
+  const ph = outEl.querySelector('.empty'); if (ph) ph.remove();
+  const li = document.createElement('li'); li.textContent = text; outEl.appendChild(li); outEl.scrollTop = outEl.scrollHeight;
 }
 
 function updateButtons() {
@@ -873,12 +919,12 @@ function resetRun() {
   A.gen = runProgram(A.prog, A.S);
   Object.assign(A, { task: null, running: false, stepping: false, done: false, error: false, carry: [], active: null, errNode: null, bubbles: [] });
   A.flash.clear();
+  WH.slots.clear();
   A.tok = { x: A.prog.start.center[0], y: A.prog.start.center[1] };
-  outEl.innerHTML = '';
-  renderVars();
+  outEl.innerHTML = '<li class="empty">print で出荷したものが、ここに並ぶよ</li>';
   setHL(null);
-  narr('「▶ 実行」を押すと、ロボットがスタートから順番に機械を動かしていくよ。「1つ進める」でゆっくり見られるよ。');
-  fscroll.scrollTop = 0;
+  narr('「▶ 実行」を押すと、ロボットがスタートから順番に機械を動かしていくよ。右の倉庫の箱に、データの品物が出たり入ったりするのを見てね。');
+  fscroll.scrollTop = 0; fscroll.scrollLeft = 0;
   updateButtons();
 }
 
@@ -917,26 +963,73 @@ function pull() {
     return null;
   }
 }
-function applyAct(ev) {
-  const now = performance.now();
+function dedupeReads(reads) {
+  const seen = new Set(), out = [];
+  for (const r of reads || []) { const k = r.n + '#' + (r.i ?? ''); if (!seen.has(k)) { seen.add(k); out.push(r); } }
+  return out;
+}
+function machinePos(n) { const b = n.box; return { x: offX + b.x + b.w / 2, y: b.y + b.h / 2 }; }
+function addBubble(n, text, ev) {
+  const b = n.box;
+  A.bubbles.push({ x: b.x + b.w / 2, y: b.y - 6, text, kind: ev.kind, result: ev.result, t0: performance.now(), dur: 1800 / Math.sqrt(A.speed) });
+}
+// 1つの act を「持ち出す → 加工する → しまう」のタイムライン（ミリ秒・速さで伸縮）にする
+function startAct(ev) {
   const n = ev.node;
   A.active = n;
-  A.flash.set(n, now);
+  A.flash.set(n, performance.now());
   if (n.line) setHL(n.line, 'on');
   narr(ev.text, n.line);
-  if (ev.bubble) {
-    const b = n.box;
-    A.bubbles.push({ x: b.x + b.w / 2, y: b.y - 6, text: ev.bubble, crate: !!ev.crate, kind: ev.kind, result: ev.result, t0: now, dur: 1700 / Math.sqrt(A.speed) });
+  const T = { t: 'act', el: 0, dur: 0, sched: [], fl: [], hot: [] };
+  const at = (t, fn) => T.sched.push({ at: t, fn, done: false });
+  const mPos = () => machinePos(n);
+  const writes = ev.writes || [];
+  if (ev.kind === 'pick') {
+    const w = writes[0];
+    at(0, () => whPrepare(w));
+    const from = ev.pick.src ? () => whPos(ev.pick.src, ev.pick.i) : mPos;
+    if (ev.pick.src) T.hot.push({ n: ev.pick.src, i: ev.pick.i, until: 750 });
+    T.fl.push({ from, to: () => whPos(w.n), t0: 100, t1: 750, label: shortRep(w.v) });
+    at(750, () => whApply(w));
+    T.dur = 1050;
+  } else {
+    const reads = dedupeReads(ev.reads);
+    let t = 0;
+    if (reads.length) {
+      for (const r of reads) {
+        T.hot.push({ n: r.n, i: r.i, until: 520 });
+        T.fl.push({ from: () => whPos(r.n, r.i), to: mPos, t0: 0, t1: 520, label: shortRep(r.v) });
+      }
+      t = 520;
+    }
+    at(t, () => { A.flash.set(n, performance.now()); if (ev.bubble) addBubble(n, ev.bubble, ev); });
+    t += ev.bubble ? 550 : 300;
+    if (writes.length) {
+      const t0 = t;
+      for (const w of writes) {
+        at(t0, () => whPrepare(w));
+        T.fl.push({ from: mPos, to: () => whPos(w.n, w.k === 'setidx' ? w.i : w.k === 'append' ? 'next' : undefined), t0, t1: t0 + 620, label: shortRep(w.v) });
+        at(t0 + 620, () => whApply(w));
+      }
+      t += 620;
+    }
+    if (ev.kind === 'print') {
+      T.fl.push({ from: mPos, to: dockPos, t0: t, t1: t + 650, label: ev.out, crate: true });
+      at(t + 650, () => addOut(ev.out));
+      t += 650;
+    }
+    T.dur = Math.max(t + 250, (ev.dur || 0) * 1000, 650);
   }
-  if (ev.kind === 'print') {
-    const li = document.createElement('li'); li.textContent = ev.out; outEl.appendChild(li); outEl.scrollTop = outEl.scrollHeight;
-  }
+  T.sched.sort((a, b) => a.at - b.at);
   if (ev.kind === 'pick') {
     const top = A.carry[A.carry.length - 1];
     if (top && top.node === n) top.label = ev.carry; else A.carry.push({ node: n, label: ev.carry });
   }
   if (ev.kind === 'loopEnd') { const top = A.carry[A.carry.length - 1]; if (top && top.node === n) A.carry.pop(); }
-  if (ev.changed || ev.touched || ev.cell) renderVars(ev.changed || [], ev.touched || [], ev.cell || null);
+  return T;
+}
+function fireSched(T, all) {
+  for (const s of T.sched) if (!s.done && (all || s.at <= T.el)) { s.done = true; s.fn(); }
 }
 function update(dt) {
   if (!(A.running || A.stepping) || A.done || A.error || A.stale || !A.gen) return;
@@ -945,7 +1038,7 @@ function update(dt) {
     if (!A.task) {
       const ev = pull(); if (!ev) return;
       if (ev.t === 'move') A.task = { t: 'move', pts: ev.pts.map(p => ({ x: p[0], y: p[1] })) };
-      else { A.task = { t: 'act', el: 0, dur: (ev.dur || 1.1) * 1000 }; applyAct(ev); }
+      else A.task = startAct(ev);
     }
     const T = A.task;
     if (T.t === 'move') {
@@ -960,7 +1053,9 @@ function update(dt) {
     } else {
       const use = Math.min(T.dur - T.el, budget * A.speed);
       T.el += use; budget -= use / A.speed;
+      fireSched(T, false);
       if (T.el >= T.dur - 0.01) {
+        fireSched(T, true);
         A.task = null;
         if (A.stepping && !A.running) { A.stepping = false; updateButtons(); return; }
       } else budget = 0;
@@ -975,7 +1070,9 @@ function readPal() {
   const g = k => cs.getPropertyValue(k).trim();
   pal = { floor: g('--floor'), grid: g('--grid'), belt: g('--belt'), beltEdge: g('--belt-edge'), beltMark: g('--belt-mark'),
     machine: g('--machine'), shadow: g('--shadow'), ink: g('--ink'), muted: g('--muted'), panel: g('--panel'), robot: g('--robot'), robotEdge: g('--robot-edge'),
-    assign: g('--c-assign'), print: g('--c-print'), loop: g('--c-loop'), if: g('--c-if'), other: g('--c-other'), danger: g('--danger'), wood: g('--wood') };
+    assign: g('--c-assign'), print: g('--c-print'), loop: g('--c-loop'), if: g('--c-if'), other: g('--c-other'), danger: g('--danger'),
+    wood: g('--wood'), woodDark: g('--wood-dark'), room: g('--room'), wall: g('--wall'), plate: g('--plate'), shelf: g('--shelf'), slot: g('--slot'),
+    item: g('--item'), itemEdge: g('--item-edge'), itemInk: g('--item-ink') };
 }
 readPal();
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readPal);
@@ -986,23 +1083,29 @@ const TYPE = {
   pass: ['なにもしない', 'other'], expr: ['計算', 'other'], for: ['くりかえし for', 'loop'], while: ['くりかえし while', 'loop'], if: ['分かれ道 if', 'if'],
 };
 const DESC = {
-  assign: '計算した値を、変数という名前つきの箱にしまう機械だよ', setidx: '配列（棚）の決まった場所の中身を入れかえる機械だよ',
+  assign: '計算した答えを、変数という名前つきの箱にしまう機械だよ', setidx: '配列（棚）の決まったマスの中身を入れかえる機械だよ',
   print: '値を出荷口に送る機械だよ（画面に表示される）', append: '配列（棚）の最後に値をつめる機械だよ',
   pass: 'なにもしない機械だよ', expr: '計算だけして、どこにもしまわない機械だよ',
   for: '配列から1つずつ取り出して、中の機械を何回も動かす門だよ', while: '条件が正しいあいだ、中の機械を何回も動かす門だよ',
   if: '条件を調べて「はい」「いいえ」の道に分ける分かれ道だよ',
 };
 
-let cssW = 0, cssH = 0, dpr = 0, offX = 0;
+let cssW = 0, cssH = 0, dpr = 0, offX = 0, whX = 0, whTop = 0, WH_W = 280;
 function sizeCanvas() {
   const d = window.devicePixelRatio || 1;
-  const W = Math.max(fscroll.clientWidth, A.prog ? A.prog.W : 0), H = Math.max(fscroll.clientHeight, A.prog ? A.prog.H : 0);
+  WH_W = Math.round(Math.max(190, Math.min(290, fscroll.clientWidth * 0.36)));
+  const flowW = A.prog ? A.prog.W : 320;
+  const need = flowW + WH_W + 36;
+  const W = Math.max(fscroll.clientWidth, need), H = Math.max(fscroll.clientHeight, A.prog ? A.prog.H : 0);
   if (W !== cssW || H !== cssH || d !== dpr) {
     cssW = W; cssH = H; dpr = d;
     cv.width = Math.round(W * d); cv.height = Math.round(H * d);
     cv.style.width = W + 'px'; cv.style.height = H + 'px';
   }
-  offX = A.prog ? Math.round((cssW - A.prog.W) / 2) : 0;
+  offX = W > need ? Math.round((W - need) / 2) : 0;
+  // 倉庫は右側。縦・横ともにスクロールしても見える位置に固定する
+  whX = Math.min(offX + flowW + 18, fscroll.scrollLeft + fscroll.clientWidth - WH_W - 12);
+  whTop = fscroll.scrollTop + 10;
 }
 function rr(x, y, w, h, r) {
   ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
@@ -1016,6 +1119,16 @@ function fit(text, maxW) {
   if (ctx.measureText(text).width <= maxW) return text;
   let s = text; while (s.length > 1 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1);
   return s + '…';
+}
+// 品物（データ）。黄色いタイルに値が書いてある
+function drawItem(x, y, text, maxW, alpha) {
+  ctx.save(); if (alpha !== undefined) ctx.globalAlpha *= alpha;
+  ctx.font = `700 13px ${MONO}`;
+  const t = fit(text, maxW), w = Math.max(24, ctx.measureText(t).width + 12);
+  rr(x - w / 2 + 1, y - 10, w, 22, 5); ctx.fillStyle = pal.shadow; ctx.fill();
+  rr(x - w / 2, y - 11, w, 22, 5); ctx.fillStyle = pal.item; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = pal.itemEdge; ctx.stroke();
+  ctx.fillStyle = pal.itemInk; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y + 0.5);
+  ctx.restore();
 }
 function drawBelt(pts, t) {
   if (pts.length < 2) return;
@@ -1053,12 +1166,13 @@ function drawFrame(s) {
   ctx.globalAlpha = 0.08; ctx.fillStyle = pal.loop; rr(f.x, f.y, f.w, f.h, 14); ctx.fill();
   ctx.globalAlpha = 0.8; ctx.setLineDash([7, 5]); ctx.strokeStyle = pal.loop; ctx.lineWidth = 2; rr(f.x, f.y, f.w, f.h, 14); ctx.stroke();
   ctx.restore();
-  let label = 'くりかえしエリア';
-  if (s.iterInfo) label += s.iterInfo.n != null ? `  ${s.iterInfo.i} / ${s.iterInfo.n} 回目` : `  ${s.iterInfo.i} 周目`;
+  // 札は門に入るベルトの右側に置く（ベルトと重ねない）
+  let label = 'くりかえし';
+  if (s.iterInfo) label += s.iterInfo.n != null ? ` ${s.iterInfo.i} / ${s.iterInfo.n} 回目` : ` ${s.iterInfo.i} 周目`;
   ctx.font = `800 11px ${ROUND}`;
-  const w = ctx.measureText(label).width + 16;
-  rr(f.x + 8, f.y - 11, w, 20, 6); ctx.fillStyle = pal.loop; ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(label, f.x + 16, f.y - 0.5);
+  const w = ctx.measureText(label).width + 16, lx = f.cx + 16;
+  rr(lx, f.y - 11, w, 20, 6); ctx.fillStyle = pal.loop; ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(label, lx + 8, f.y - 0.5);
 }
 function drawMachine(s, now) {
   const b = s.box, [chip, ck] = TYPE[s.type], col = pal[ck];
@@ -1068,17 +1182,13 @@ function drawMachine(s, now) {
   shape(); ctx.fillStyle = pal.machine; ctx.fill();
   if (fl > 0) { ctx.save(); ctx.globalAlpha = 0.25 * fl; ctx.fillStyle = col; shape(); ctx.fill(); ctx.restore(); }
   ctx.lineWidth = 2.5; ctx.strokeStyle = col; shape(); ctx.stroke();
-  // 種類のラベル
   ctx.font = `800 10.5px ${ROUND}`;
   const cw = ctx.measureText(chip).width + 12, chx = s.type === 'if' ? b.x + 18 : b.x + 8;
   rr(chx, b.y + 6, cw, 16, 8); ctx.fillStyle = col; ctx.fill();
   ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(chip, chx + 6, b.y + 14.5);
-  // 歯車
   drawGear(b.x + b.w - (s.type === 'if' ? 26 : 16), b.y + 14, 7.5, active && (A.running || A.stepping) && !reduced ? now / 260 : 0, col);
-  // コード
   ctx.font = `600 13px ${MONO}`; ctx.fillStyle = pal.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(fit(s.src, b.w - (s.type === 'if' ? 36 : 20)), b.x + b.w / 2, b.y + 37);
-  // 分かれ道のランプ
   if (s.type === 'if') {
     const lamp = (x, on, c) => { ctx.beginPath(); ctx.arc(x, b.y + b.h - 2, 5, 0, Math.PI * 2); ctx.fillStyle = on ? c : pal.machine; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = c; ctx.stroke(); };
     lamp(b.x + b.w / 4, s.lastResult === true, pal.print);
@@ -1107,7 +1217,6 @@ function drawStation(st, label, goal) {
 }
 function drawRobot(now) {
   const x = A.tok.x, moving = (A.running || A.stepping) && !reduced, y = A.tok.y + (moving ? Math.sin(now / 110) * 1.4 : 0);
-  // 運んでいる箱
   let cy = y - 20;
   ctx.font = `600 11.5px ${MONO}`;
   for (let i = A.carry.length - 1; i >= 0 && i >= A.carry.length - 2; i--) {
@@ -1116,7 +1225,6 @@ function drawRobot(now) {
     ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(fit(t, w - 8), x, cy - 8.5);
     cy -= 20;
   }
-  // からだ
   ctx.fillStyle = '#1E272B';
   ctx.beginPath(); ctx.arc(x - 8, y + 12, 3.6, 0, Math.PI * 2); ctx.arc(x + 8, y + 12, 3.6, 0, Math.PI * 2); ctx.fill();
   rr(x - 14, y - 12, 28, 23, 7); ctx.fillStyle = pal.robot; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = pal.robotEdge; ctx.stroke();
@@ -1132,12 +1240,123 @@ function drawBubbles(now) {
   for (const b of A.bubbles) {
     const p = (now - b.t0) / b.dur, y = b.y - 10 - p * 26;
     ctx.save(); ctx.globalAlpha = p < 0.7 ? 1 : 1 - (p - 0.7) / 0.3;
-    ctx.font = `700 13px ${b.crate ? MONO : ROUND}`;
-    const text = fit(b.text, 240), w = ctx.measureText(text).width + 18;
-    const bg = b.crate ? pal.wood : b.kind === 'cond' ? (b.result ? pal.print : pal.danger) : pal.ink;
-    rr(b.x - w / 2, y - 13, w, 26, b.crate ? 4 : 13); ctx.fillStyle = bg; ctx.fill();
-    ctx.fillStyle = b.crate || b.kind === 'cond' ? '#fff' : pal.panel; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, b.x, y + 0.5);
+    ctx.font = `700 13px ${ROUND}`;
+    const text = fit(b.text, 260), w = ctx.measureText(text).width + 18;
+    const bg = b.kind === 'cond' ? (b.result ? pal.print : pal.danger) : pal.ink;
+    rr(b.x - w / 2, y - 13, w, 26, 13); ctx.fillStyle = bg; ctx.fill();
+    ctx.fillStyle = b.kind === 'cond' ? '#fff' : pal.panel; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, b.x, y + 0.5);
     ctx.restore();
+  }
+}
+function isHot(n, i) {
+  const T = A.task;
+  if (!T || T.t !== 'act') return false;
+  return T.hot.some(h => h.n === n && (i === undefined ? h.i === undefined : h.i === i) && T.el < h.until + 200);
+}
+function drawCrate(s, bx, by, now) {
+  const w = s.tw, h = s.th;
+  // 箱の本体（木の板）
+  ctx.save(); ctx.translate(2, 3); rr(bx, by + 14, w, h - 14, 6); ctx.fillStyle = pal.shadow; ctx.fill(); ctx.restore();
+  rr(bx, by + 14, w, h - 14, 6); ctx.fillStyle = pal.wood; ctx.fill();
+  ctx.strokeStyle = pal.woodDark; ctx.lineWidth = 1;
+  for (const yy of [by + 30, by + h - 12]) { ctx.beginPath(); ctx.moveTo(bx + 4, yy); ctx.lineTo(bx + w - 4, yy); ctx.stroke(); }
+  // 中身の窓
+  rr(bx + 8, by + 32, w - 16, h - 46, 5); ctx.fillStyle = pal.woodDark; ctx.fill();
+  if (!s.empty) drawItem(bx + w / 2, by + 46, rep(s.v), w - 26);
+  else { ctx.font = `700 11px ${ROUND}`; ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('からっぽ', bx + w / 2, by + 46); }
+  // 捨てられる古い中身
+  if (s.dropped && s.dropped.i === undefined) {
+    const p = (now - s.dropped.t0) / 600;
+    if (p < 1) drawItem(bx + w / 2 + p * 26, by + 46 - p * 34, rep(s.dropped.v), w - 26, 1 - p);
+  }
+  // 名札
+  ctx.font = `700 12px ${MONO}`;
+  const name = fit(s.n, w - 20), pw = Math.min(w - 8, ctx.measureText(name).width + 18);
+  rr(bx + w / 2 - pw / 2, by + 2, pw, 20, 4); ctx.fillStyle = pal.plate; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = pal.wall; ctx.stroke();
+  ctx.fillStyle = pal.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(name, bx + w / 2, by + 12.5);
+  const fl = Math.max(0, 1 - (now - s.flash) / 700);
+  if (fl > 0) { ctx.lineWidth = 2 + fl * 3; ctx.strokeStyle = pal.robot; rr(bx - 3, by - 1, w + 6, h + 4, 8); ctx.stroke(); }
+  if (isHot(s.n)) { ctx.lineWidth = 3; ctx.strokeStyle = pal.assign; rr(bx - 3, by - 1, w + 6, h + 4, 8); ctx.stroke(); }
+}
+function drawShelf(s, bx, by, now) {
+  const w = s.tw, h = s.th;
+  rr(bx, by, w, h, 6); ctx.fillStyle = pal.slot; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = pal.shelf; ctx.stroke();
+  // 名札
+  ctx.font = `700 12px ${MONO}`;
+  const name = fit(s.n, w - 110), pw = ctx.measureText(name).width + 18;
+  rr(bx + 8, by + 5, pw, 20, 4); ctx.fillStyle = pal.plate; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = pal.wall; ctx.stroke();
+  ctx.fillStyle = pal.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(name, bx + 17, by + 15.5);
+  ctx.font = `700 11px ${ROUND}`; ctx.fillStyle = pal.muted; ctx.fillText(`配列・${s.items.length}個`, bx + 16 + pw, by + 15.5);
+  const n = s.items.length + (s.pending ? 1 : 0);
+  for (let i = 0; i < n; i++) {
+    const c = i % s.per, r = Math.floor(i / s.per);
+    const x = bx + 8 + c * (CELL + CELL_GAP), y = by + 30 + r * (CELL + 18);
+    rr(x, y, CELL, CELL, 4); ctx.fillStyle = pal.panel; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = pal.shelf;
+    if (i >= s.items.length) ctx.setLineDash([4, 3]);
+    ctx.stroke(); ctx.setLineDash([]);
+    if (i < s.items.length) drawItem(x + CELL / 2, y + CELL / 2, rep(s.items[i]), CELL + 20);
+    if (s.dropped && s.dropped.i === i) {
+      const p = (now - s.dropped.t0) / 600;
+      if (p < 1) drawItem(x + CELL / 2 + p * 20, y + CELL / 2 - p * 30, rep(s.dropped.v), CELL + 20, 1 - p);
+    }
+    ctx.font = `600 10px ${MONO}`; ctx.fillStyle = pal.muted; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(String(i), x + CELL / 2, y + CELL + 3);
+    const cf = s.cellFlash.get(i), fl = cf ? Math.max(0, 1 - (now - cf) / 700) : 0;
+    if (fl > 0) { ctx.lineWidth = 2 + fl * 3; ctx.strokeStyle = pal.robot; rr(x - 3, y - 3, CELL + 6, CELL + 6, 6); ctx.stroke(); }
+    if (isHot(s.n, i)) { ctx.lineWidth = 3; ctx.strokeStyle = pal.assign; rr(x - 3, y - 3, CELL + 6, CELL + 6, 6); ctx.stroke(); }
+  }
+  if (!n) { ctx.font = `700 11px ${ROUND}`; ctx.fillStyle = pal.muted; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText('からっぽの棚', bx + 12, by + 30 + CELL / 2); }
+  const fl = Math.max(0, 1 - (now - s.flash) / 700);
+  if (isHot(s.n)) { ctx.lineWidth = 3; ctx.strokeStyle = pal.assign; rr(bx - 3, by - 3, w + 6, h + 6, 8); ctx.stroke(); }
+  else if (fl > 0 && s.items.length === 0) { ctx.lineWidth = 2 + fl * 3; ctx.strokeStyle = pal.robot; rr(bx - 3, by - 3, w + 6, h + 6, 8); ctx.stroke(); }
+}
+function drawWarehouse(now) {
+  const W = WH_W, H = fscroll.clientHeight - 20, x0 = whX, y0 = whTop;
+  whLayout(W);
+  ctx.save();
+  ctx.translate(2, 4); rr(x0, y0, W, H, 12); ctx.fillStyle = pal.shadow; ctx.fill(); ctx.translate(-2, -4);
+  rr(x0, y0, W, H, 12); ctx.fillStyle = pal.room; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = pal.wall; ctx.stroke();
+  // 看板
+  ctx.font = `800 14px ${ROUND}`; ctx.fillStyle = pal.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText('倉庫', x0 + 14, y0 + 20);
+  ctx.font = `700 11px ${ROUND}`; ctx.fillStyle = pal.muted; ctx.fillText('変数の箱と配列の棚', x0 + 52, y0 + 21);
+  // 出荷口
+  const dy = y0 + H - 40;
+  rr(x0 + 12, dy, W - 24, 28, 6); ctx.fillStyle = pal.ink; ctx.fill();
+  ctx.fillStyle = pal.panel; ctx.textAlign = 'center'; ctx.font = `800 12px ${ROUND}`; ctx.fillText('出荷口（print）→ 右の一覧へ', x0 + W / 2, dy + 14.5);
+  // 中身（出荷口より上に切り抜く）
+  ctx.beginPath(); ctx.rect(x0, y0 + 32, W, H - 32 - 48); ctx.clip();
+  if (!WH.slots.size) {
+    ctx.font = `700 12px ${ROUND}`; ctx.fillStyle = pal.muted; ctx.textAlign = 'center';
+    ctx.fillText('まだ箱はないよ', x0 + W / 2, y0 + 70);
+    ctx.fillText('x = 3 と書くと「x」の箱ができるよ', x0 + W / 2, y0 + 90);
+  }
+  for (const s of WH.slots.values()) {
+    const p = Math.min(1, (now - s.born) / 350);
+    ctx.save(); ctx.globalAlpha = p;
+    const bx = x0 + s.x, by = y0 + s.y - (1 - p) * 18;
+    if (s.list) drawShelf(s, bx, by, now); else drawCrate(s, bx, by, now);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+// 飛んでいる品物（倉庫⇔機械）。act の経過時間で動くので、一時停止すると空中で止まる
+function drawFlights() {
+  const T = A.task;
+  if (!T || T.t !== 'act') return;
+  for (const f of T.fl) {
+    const p = (T.el - f.t0) / (f.t1 - f.t0);
+    if (p <= 0 || p >= 1) continue;
+    const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    const a = f.from(), b = f.to();
+    const cx = (a.x + b.x) / 2, cy = Math.min(a.y, b.y) - 50;
+    const x = (1 - e) * (1 - e) * a.x + 2 * (1 - e) * e * cx + e * e * b.x;
+    const y = (1 - e) * (1 - e) * a.y + 2 * (1 - e) * e * cy + e * e * b.y;
+    if (f.crate) {
+      ctx.font = `700 12px ${MONO}`;
+      const t = fit(f.label, 180), w = ctx.measureText(t).width + 18;
+      rr(x - w / 2, y - 13, w, 26, 3); ctx.fillStyle = pal.wood; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = pal.woodDark; ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y + 0.5);
+    } else drawItem(x, y, f.label, 160);
   }
 }
 function draw(now) {
@@ -1167,6 +1386,7 @@ function draw(now) {
   for (const s of P.nodes) drawMachine(s, now);
   if (!A.stale) { drawRobot(now); drawBubbles(now); }
   ctx.restore();
+  if (!A.stale) { drawWarehouse(now); drawFlights(); }
   if (A.stale) {
     ctx.font = `700 14px ${ROUND}`; ctx.fillStyle = pal.ink; ctx.textAlign = 'center';
     ctx.fillText('コードを直すと、工場が組み立てなおされるよ', cssW / 2, fscroll.scrollTop + 40);
@@ -1175,8 +1395,9 @@ function draw(now) {
 function follow() {
   if (!followEl.checked || !(A.running || A.stepping) || !A.prog) return;
   const x = A.tok.x + offX, y = A.tok.y, sc = fscroll, m = 90;
+  const visR = sc.scrollLeft + sc.clientWidth - WH_W - 30;
   if (y < sc.scrollTop + m || y > sc.scrollTop + sc.clientHeight - m) sc.scrollTop += (y - sc.clientHeight / 2 - sc.scrollTop) * 0.1;
-  if (x < sc.scrollLeft + m || x > sc.scrollLeft + sc.clientWidth - m) sc.scrollLeft += (x - sc.clientWidth / 2 - sc.scrollLeft) * 0.1;
+  if (x < sc.scrollLeft + m || x > visR - m) sc.scrollLeft += (x - (sc.clientWidth - WH_W) / 2 - sc.scrollLeft) * 0.1;
 }
 let last = performance.now();
 function frame(now) {
@@ -1187,8 +1408,8 @@ function frame(now) {
 
 // ============ 操作 ============
 SAMPLES.forEach((s, i) => { const o = document.createElement('option'); o.value = i; o.textContent = s.name; sampleEl.appendChild(o); });
-sampleEl.value = '1';
-codeEl.value = SAMPLES[1].code;
+sampleEl.value = '0';
+codeEl.value = SAMPLES[0].code;
 
 let timer = 0;
 codeEl.addEventListener('input', () => { A.hlLine = null; renderHL(); clearTimeout(timer); timer = setTimeout(build, 450); });
@@ -1217,7 +1438,9 @@ speedEl.addEventListener('input', () => { A.speed = +speedEl.value; speedV.textC
 
 function hit(e) {
   if (!A.prog) return null;
-  const r = cv.getBoundingClientRect(), x = e.clientX - r.left - offX, y = e.clientY - r.top;
+  const r = cv.getBoundingClientRect(), cx = e.clientX - r.left, y = e.clientY - r.top;
+  if (cx >= whX && cx <= whX + WH_W) return null;
+  const x = cx - offX;
   return A.prog.nodes.find(s => x >= s.box.x && x <= s.box.x + s.box.w && y >= s.box.y && y <= s.box.y + s.box.h) || null;
 }
 cv.addEventListener('mousemove', e => { cv.style.cursor = hit(e) ? 'pointer' : 'default'; });
