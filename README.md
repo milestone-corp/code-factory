@@ -3,7 +3,7 @@
 子どものプログラミング学習用。Python のコードから 2D の工場（Factorio 風）を組み立て、実行するとロボットが機械を順に動かして、for・if・配列などの動きを見せる。
 
 - モックアップ: `index.html`（ブラウザで直接開ける単一ファイル。外部依存は Google Fonts のみ）
-- 公開版（非公開リンク）: https://claude.ai/artifact/XmEL7dShk6Yb2xuvQJxv3E
+- 遊べるページ: https://milestone-corp.github.io/code-factory/ （GitHub Pages。main に push すると自動で更新される）
 
 ## 現在のモックアップ（v0）
 
