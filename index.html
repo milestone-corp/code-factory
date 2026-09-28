@@ -21,6 +21,7 @@
   --room:#E9E1D0; --wall:#8C7B63; --plate:#FFF9EA; --shelf:#7D8791; --slot:#F3EEE2;
   --item:#FFE08A; --item-edge:#C79A1E; --item-ink:#3B2A12;
   --hl-on:rgba(242,194,48,.42); --hl-err:rgba(211,63,63,.22); --hl-pick:rgba(47,111,214,.18);
+  --order-bg:#FFFDF4; --scrim:rgba(231,234,227,.80);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -36,6 +37,7 @@
     --room:#2A2621; --wall:#6B5D4B; --plate:#3B352B; --shelf:#6A737C; --slot:#221F1B;
     --item:#EFC75E; --item-edge:#A77F0B; --item-ink:#2A1E0C;
     --hl-on:rgba(242,194,48,.28); --hl-err:rgba(240,106,106,.25); --hl-pick:rgba(92,148,242,.22);
+    --order-bg:#23251F; --scrim:rgba(20,24,27,.82);
   }
 }
 :root[data-theme="dark"]{
@@ -51,7 +53,9 @@
   --room:#2A2621; --wall:#6B5D4B; --plate:#3B352B; --shelf:#6A737C; --slot:#221F1B;
   --item:#EFC75E; --item-edge:#A77F0B; --item-ink:#2A1E0C;
   --hl-on:rgba(242,194,48,.28); --hl-err:rgba(240,106,106,.25); --hl-pick:rgba(92,148,242,.22);
+  --order-bg:#23251F; --scrim:rgba(20,24,27,.82);
 }
+[hidden]{display:none!important}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:"M PLUS Rounded 1c",system-ui,"Hiragino Maru Gothic ProN",sans-serif;font-size:14px}
 .app{box-sizing:border-box;max-width:1680px;margin:0 auto;padding-inline:16px;padding-block:14px 18px;display:flex;flex-direction:column;gap:12px;min-height:100%}
@@ -113,16 +117,82 @@ input[type=range]{accent-color:var(--robot-edge);width:110px}
 .out .empty{color:var(--muted);font-size:13px;line-height:1.6;background:none;border:0;padding:0;font-family:inherit;animation:none}
 @keyframes slidein{from{transform:translateX(18px);opacity:0}to{transform:none;opacity:1}}
 
+.modes{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.modes button{border:0;border-radius:0;background:var(--panel);padding:7px 12px}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.star-total{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--robot-edge);font-weight:700;margin-left:4px;font-variant-numeric:tabular-nums}
+.order{margin:0 10px 8px;padding:10px 12px;border-radius:8px;background:var(--order-bg);border:1px solid var(--line);display:flex;flex-direction:column;gap:8px;max-height:52%;overflow:auto;flex:none}
+.order-head{display:flex;align-items:center;gap:8px}
+.stage-no{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:700;font-size:12px;background:var(--ink);color:var(--panel);border-radius:4px;padding:1px 6px;flex:none}
+.order h3{margin:0;font-size:15px;font-weight:800;flex:1;min-width:0;text-wrap:balance}
+.stars{color:var(--robot-edge);letter-spacing:1px;white-space:nowrap}
+.stars .off,.big-stars .off{color:var(--line)}
+.order-text{margin:0;line-height:1.6}
+.order-ex{display:grid;gap:4px;font-size:13px}
+.order-ex .lbl{display:inline-block;min-width:3em;font-size:11px;font-weight:800;color:var(--muted)}
+.order-ex code,.day-res code{font-family:"JetBrains Mono",ui-monospace,monospace;background:var(--code-bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;overflow-wrap:anywhere}
+.days{display:flex;gap:4px;flex-wrap:wrap}
+.days button{padding:3px 10px;font-size:12px}
+.days button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.goals{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
+.goals b{color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}
+.hints{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.hints p{margin:0;font-size:13px;background:var(--hl-pick);border-radius:6px;padding:6px 8px;line-height:1.5}
+button.link{background:none;border:0;padding:0;color:var(--focus);font-weight:700;font-size:13px;text-decoration:underline}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:6px}
+.choice{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:18px;padding:8px}
+.choice.picked{background:var(--robot);border-color:var(--robot-edge);color:#1E272B}
+.order-note{margin:0;font-size:12px;color:var(--muted)}
+.inspect{padding:0 10px 10px;overflow:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.inspect .empty{color:var(--muted);line-height:1.6;margin:0}
+.day-res{border:1px solid var(--line);border-left:4px solid var(--line);border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:4px}
+.day-res.ok{border-left-color:var(--c-print)}
+.day-res.ng{border-left-color:var(--danger)}
+.day-res .row{display:flex;justify-content:space-between;gap:8px;font-weight:800}
+.day-res.ok .row span{color:var(--c-print)}
+.day-res.ng .row span{color:var(--danger)}
+.day-res .msg{color:var(--muted);line-height:1.5}
+.factory-panel{position:relative}
+.result{position:absolute;inset:0;display:grid;place-items:center;background:var(--scrim);border-radius:10px;z-index:5;padding:16px}
+.result-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;max-width:390px;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;box-shadow:0 12px 32px var(--shadow)}
+.stamp{align-self:center;font-family:"Dela Gothic One","M PLUS Rounded 1c",sans-serif;font-size:28px;padding:4px 18px;border:5px double currentColor;border-radius:10px;transform:rotate(-6deg);letter-spacing:.12em;animation:stamp .35s ease-out}
+.stamp.ok{color:var(--c-print)}
+.stamp.ng{color:var(--danger)}
+@keyframes stamp{from{transform:scale(1.8) rotate(-6deg);opacity:0}to{transform:rotate(-6deg);opacity:1}}
+.big-stars{text-align:center;font-size:34px;color:var(--robot);letter-spacing:4px;line-height:1}
+.crit{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.crit li{display:flex;gap:8px;align-items:baseline;line-height:1.5}
+.crit .mk{font-weight:800;width:1.2em;flex:none;color:var(--c-print)}
+.crit li.miss .mk{color:var(--muted)}
+.result-card p{margin:0;line-height:1.6}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.map{position:fixed;inset:0;background:rgba(20,24,27,.55);display:grid;place-items:center;z-index:20;padding:16px}
+.map-card{background:var(--panel);border-radius:12px;max-width:840px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px}
+.map-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.map-head h2{margin:0;font-family:"Dela Gothic One","M PLUS Rounded 1c",sans-serif;font-weight:400;font-size:22px;flex:1}
+.world h3{margin:0 0 2px;font-size:16px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.world h3 span{font-size:12px;color:var(--muted);font-weight:700}
+.world p{margin:0 0 8px;color:var(--muted);font-size:13px}
+.stage-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.stage-btn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:8px 10px;min-height:76px;font-weight:700}
+.stage-btn .sid{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;color:var(--muted)}
+.stage-btn .st{font-size:13px;line-height:1.4}
+.stage-btn.quiz{border-style:dashed}
+.stage-btn.cur{border:2px solid var(--ink)}
+.unlock{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center}
+@media (prefers-reduced-motion: reduce){ .stamp{animation:none} }
+
 @media (max-width:1180px){
   .grid{grid-template-columns:minmax(230px,300px) minmax(0,1fr);height:auto}
   .code-panel,.factory-panel{height:680px}
-  .side{grid-column:1/-1}
-  .side .panel{height:220px}
+  .side{grid-column:1/-1;flex-direction:row}
+  .side .panel{height:240px;flex:1}
 }
 @media (max-width:760px){
   .grid{grid-template-columns:minmax(0,1fr)}
   .code-panel{height:380px}
   .factory-panel{height:74vh}
+  .side{flex-direction:column}
   .brand h1{font-size:24px}
 }
 @media (prefers-reduced-motion: reduce){
@@ -139,11 +209,13 @@ input[type=range]{accent-color:var(--robot-edge);width:110px}
       <p>コードを書くと工場ができて、実行するとロボットが動くよ</p>
     </div>
     <div class="controls">
-      <label for="sample">お手本</label>
-      <select id="sample"></select>
+      <div class="modes" role="group" aria-label="モード"><button id="modeStage" aria-pressed="true">ステージ</button><button id="modeFree" aria-pressed="false">自由工場</button></div>
+      <button id="openMap">ステージ一覧<span id="starTotal" class="star-total"></span></button>
+      <span id="freeCtl" hidden><label for="sample">お手本</label> <select id="sample"></select></span>
       <button id="run" class="primary">▶ 実行</button>
       <button id="step">1つ進める</button>
       <button id="reset">最初から</button>
+      <button id="inspectBtn">検品する</button>
       <div class="speed"><label for="speed">はやさ</label><input type="range" id="speed" min="0.25" max="4" step="0.25" value="1"><output id="speedv" for="speed">1x</output></div>
     </div>
   </header>
@@ -151,6 +223,7 @@ input[type=range]{accent-color:var(--robot-edge);width:110px}
   <main class="grid">
     <section class="panel code-panel">
       <div class="ph"><h2>コード</h2><span class="hint">Python で書いてね（書きかえると工場も変わる）</span></div>
+      <div id="order" class="order" hidden></div>
       <div class="editor"><pre id="hl" aria-hidden="true"></pre><textarea id="code" spellcheck="false" wrap="off" autocapitalize="off" autocomplete="off" aria-label="コード"></textarea></div>
       <div id="err" class="err" hidden></div>
       <details class="cheat">
@@ -188,12 +261,15 @@ input[type=range]{accent-color:var(--robot-edge);width:110px}
       <div id="narr" class="narr" aria-live="polite"></div>
       <div class="fscroll" id="fscroll"><canvas id="cv"></canvas></div>
       <label class="follow"><input type="checkbox" id="follow" checked> ロボットを追いかける</label>
+      <div id="result" class="result" hidden></div>
     </section>
 
     <aside class="side">
       <section class="panel"><div class="ph"><h2>出荷口</h2><span class="hint">print の結果</span></div><ol id="out" class="out"></ol></section>
+      <section class="panel" id="inspectPanel"><div class="ph"><h2>検品</h2><span class="hint">3日分の注文と照らし合わせる</span></div><div id="inspect" class="inspect"></div></section>
     </aside>
   </main>
+  <div id="map" class="map" hidden></div>
 </div>
 
 <script>
@@ -907,23 +983,28 @@ function addOut(text) {
 
 function updateButtons() {
   const ok = A.prog && !A.stale;
-  runBtn.disabled = !ok; resetBtn.disabled = !ok;
-  runBtn.textContent = A.running ? '⏸ 一時停止' : (A.done || A.error) ? '▶ もう一度' : '▶ 実行';
-  stepBtn.disabled = !ok || A.running;
+  const st = G.mode === 'stage' ? G.stage : null, quiz = st && st.kind === 'quiz';
+  const waitPick = quiz && !G.quizPick;
+  runBtn.disabled = !ok || waitPick; resetBtn.disabled = !ok; stepBtn.disabled = !ok || A.running || waitPick;
+  const day = st && !quiz ? `（${G.day + 1}日目）` : '';
+  runBtn.textContent = waitPick ? '答えを選んでね' : A.running ? '⏸ 一時停止' : (A.done || A.error) ? `▶ もう一度${day}` : `▶ 実行${day}`;
+  inspectBtn.hidden = !st || quiz;
+  inspectBtn.disabled = !ok || A.running;
 }
 
 function resetRun() {
-  if (!A.prog) return;
-  walk(A.prog.body, s => { s.iterInfo = null; s.lastResult = null; });
+  if (A.prog) walk(A.prog.body, s => { s.iterInfo = null; s.lastResult = null; });
   A.S = { env: new Map(), steps: 0 };
-  A.gen = runProgram(A.prog, A.S);
+  A.gen = A.prog ? runProgram(A.prog, A.S) : null;
   Object.assign(A, { task: null, running: false, stepping: false, done: false, error: false, carry: [], active: null, errNode: null, bubbles: [] });
   A.flash.clear();
   WH.slots.clear();
-  A.tok = { x: A.prog.start.center[0], y: A.prog.start.center[1] };
+  const inp = currentInput();
+  if (inp) for (const [k, v] of Object.entries(inp)) { A.S.env.set(k, clone(v)); whApply({ k: 'set', n: k, v: clone(v) }); }
+  A.tok = A.prog ? { x: A.prog.start.center[0], y: A.prog.start.center[1] } : { x: 0, y: 0 };
   outEl.innerHTML = '<li class="empty">print で出荷したものが、ここに並ぶよ</li>';
   setHL(null);
-  narr('「▶ 実行」を押すと、ロボットがスタートから順番に機械を動かしていくよ。右の倉庫の箱に、データの品物が出たり入ったりするのを見てね。');
+  narr(restText());
   fscroll.scrollTop = 0; fscroll.scrollLeft = 0;
   updateButtons();
 }
@@ -933,10 +1014,11 @@ function build() {
   try {
     const prog = parseProgram(src);
     errEl.hidden = true;
-    if (!prog.body.length) { A.prog = null; A.stale = false; narr('コードを書くと、ここに工場ができるよ'); renderHL(); updateButtons(); return; }
+    if (!prog.body.length) { A.prog = null; A.stale = false; resetRun(); renderOrder(); return; }
     layoutProgram(prog);
     A.prog = prog; A.stale = false;
     resetRun();
+    renderOrder();
   } catch (e) {
     if (!(e instanceof CodeError)) throw e;
     errEl.hidden = false;
@@ -951,7 +1033,7 @@ function build() {
 function pull() {
   try {
     const r = A.gen.next();
-    if (r.done) { A.done = true; A.running = false; A.stepping = false; updateButtons(); return null; }
+    if (r.done) { A.done = true; A.running = false; A.stepping = false; updateButtons(); onRunDone(); return null; }
     return r.value;
   } catch (e) {
     A.error = true; A.running = false; A.stepping = false;
@@ -1369,7 +1451,8 @@ function draw(now) {
   ctx.stroke();
   if (!A.prog) {
     ctx.font = `700 15px ${ROUND}`; ctx.fillStyle = pal.muted; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('コードを書くと、ここに工場ができるよ', cssW / 2, 80); return;
+    ctx.fillText('コードを書くと、ここに工場ができるよ', offX + 160, 80);
+    drawWarehouse(now); return;
   }
   const P = A.prog, t = reduced ? 0 : ((A.running || A.stepping) ? now / 1000 : now / 4000);
   ctx.save(); ctx.translate(offX, 0);
@@ -1406,13 +1489,311 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
+// ============ ゲーム（ステージ・検品・星） ============
+// ステージの「入荷」は days に3日分。模範解答 ref を実際に動かして、注文（出荷されるべき品物）と
+// ★2（機械の数）・★3（歩数）の目標を自動で決める
+const WORLDS = [
+  { name: 'はじめての工場', learn: '箱（変数）の中身を使って、出荷（print）しよう', stages: [
+    { id: '1-1', title: 'まずは動かしてみよう', text: '入荷した数が a の箱に入っているよ。その数をそのまま出荷してね。コードはもう書いてあるから、▶ 実行 を押してみよう。',
+      days: [{ a: 5 }, { a: 12 }, { a: 7 }], ref: 'print(a)', starter: '# a の箱に、入荷した数が入っているよ\nprint(a)\n' },
+    { id: '1-2', title: '2倍にして出荷', text: 'a の数を2倍にして出荷してね。',
+      days: [{ a: 4 }, { a: 15 }, { a: 0 }], ref: 'print(a * 2)', starter: '# a を2倍にして出荷しよう\n',
+      hints: ['かけ算は * だよ。a * 2 で2倍になるよ', 'print( ) のかっこの中に、計算をそのまま書けるよ'] },
+    { id: '1-3', title: '2つの箱をたす', text: 'a と b の箱に数が入っているよ。2つをたした数を出荷してね。',
+      days: [{ a: 3, b: 4 }, { a: 10, b: 25 }, { a: 7, b: 0 }], ref: 'print(a + b)', starter: '# a と b をたして出荷しよう\n',
+      hints: ['たし算は + だよ'] },
+    { id: '1-4', title: '合計と差', text: 'a と b をたした数と、a から b をひいた数を、この順番で2つ出荷してね。',
+      days: [{ a: 9, b: 4 }, { a: 20, b: 5 }, { a: 6, b: 6 }], ref: 'print(a + b)\nprint(a - b)', starter: '# 2つ出荷しよう\n',
+      hints: ['print は何回でも使えるよ。1行に1つずつ書こう', 'ひき算は - だよ'] },
+    { id: '1-5', kind: 'quiz', title: '予想クイズ: 箱の中身', question: 'この工場で出荷されるのはどれ？',
+      code: 'x = 3\ny = x + 4\nx = y * 2\nprint(x)', choices: ['7', '14', '6', '10'] },
+  ] },
+  { name: 'くりかえし工場', learn: 'for で、同じ機械を何回も動かそう', stages: [
+    { id: '2-1', title: '全部出荷', text: 'nums の棚に、入荷した数が並んでいるよ。1つずつ取り出して、全部出荷してね。',
+      days: [{ nums: [3, 8, 1] }, { nums: [10, 20, 30, 40] }, { nums: [7] }], ref: 'for n in nums:\n    print(n)', starter: '# nums の数を全部出荷しよう\n',
+      hints: ['for n in nums: と書くと、棚から1つずつ n の箱に取り出せるよ', 'for の次の行は、先頭に空白を4つ入れて書くよ'] },
+    { id: '2-2', title: '全部2倍', text: 'nums の数を1つずつ、2倍にして出荷してね。',
+      days: [{ nums: [1, 2, 3] }, { nums: [5, 0, 12, 8] }, { nums: [100] }], ref: 'for n in nums:\n    print(n * 2)', starter: '',
+      hints: ['2-1 の工場に、2倍にする計算を足してみよう'] },
+    { id: '2-3', title: '合計を出荷', text: 'nums の数を全部たした合計を1つだけ出荷してね。',
+      days: [{ nums: [3, 8, 1, 5] }, { nums: [10, 20] }, { nums: [] }],
+      ref: 'total = 0\nfor n in nums:\n    total = total + n\nprint(total)', starter: '',
+      hints: ['合計を入れておく箱を先に作ろう。total = 0', 'くりかえしの中で total = total + n とすると、箱の中身がふえていくよ', 'print はくりかえしの外（字下げしない）に書こう'] },
+    { id: '2-4', title: '1から a まで数える', text: '1, 2, 3, … と a まで、数を1つずつ出荷してね。',
+      days: [{ a: 3 }, { a: 5 }, { a: 1 }], ref: 'for i in range(1, a + 1):\n    print(i)', starter: '',
+      hints: ['range(1, 4) は 1, 2, 3 だよ。最後の数は入らないよ', 'range(1, a + 1) にすると a まで数えられるよ'] },
+    { id: '2-5', title: 'a の段の九九', text: 'a の段の九九を、a×1 から a×9 まで順番に出荷してね。',
+      days: [{ a: 2 }, { a: 7 }, { a: 9 }], ref: 'for i in range(1, 10):\n    print(a * i)', starter: '',
+      hints: ['1 から 9 まで数えるくりかえしを作ろう', 'くりかえしの中で a * i を出荷しよう'] },
+    { id: '2-6', kind: 'quiz', title: '予想クイズ: くりかえし', question: 'この工場で出荷されるのはどれ？',
+      code: 'count = 0\nfor i in range(4):\n    count = count + i\nprint(count)', choices: ['4', '6', '10', '3'] },
+  ] },
+  { name: '分かれ道工場', learn: 'if で、品物によって道を分けよう', stages: [
+    { id: '3-1', title: '偶数だけ出荷', text: 'nums の数のうち、偶数だけを出荷してね。',
+      days: [{ nums: [4, 7, 10, 3] }, { nums: [1, 3, 5] }, { nums: [2, 2, 8, 11, 6] }],
+      ref: 'for n in nums:\n    if n % 2 == 0:\n        print(n)', starter: '',
+      hints: ['2でわったあまりは n % 2 で計算できるよ', '偶数は n % 2 == 0 のときだよ', 'if はくりかえしの中に書こう'] },
+    { id: '3-2', title: '大と小に分ける', text: 'nums の数を1つずつ見て、10以上なら「大」、それより小さければ「小」を出荷してね。',
+      days: [{ nums: [12, 3, 10] }, { nums: [9, 50] }, { nums: [1, 2, 3, 30] }],
+      ref: 'for n in nums:\n    if n >= 10:\n        print("大")\n    else:\n        print("小")', starter: '',
+      hints: ['文字を出荷するときは print("大") のように " " でかこむよ', 'if のあとに else: を書くと「そうじゃないとき」の道を作れるよ'] },
+    { id: '3-3', title: '大きいほう', text: 'a と b のうち、大きいほうを出荷してね。同じときは、どちらでもいいよ。',
+      days: [{ a: 3, b: 9 }, { a: 15, b: 4 }, { a: 6, b: 6 }], ref: 'if a > b:\n    print(a)\nelse:\n    print(b)', starter: '',
+      hints: ['a > b で「a のほうが大きい」を調べられるよ'] },
+    { id: '3-4', title: 'いちばん大きい数', text: 'nums の中で、いちばん大きい数を1つだけ出荷してね。',
+      days: [{ nums: [62, 91, 78, 85] }, { nums: [5, 3, 1] }, { nums: [7, 20, 20, 4] }],
+      ref: 'best = nums[0]\nfor n in nums:\n    if n > best:\n        best = n\nprint(best)', starter: '',
+      hints: ['いちばん大きい数を入れておく箱を作ろう。最初は nums[0] にしておくといいよ', 'n のほうが大きかったら、箱の中身を n に入れかえよう'] },
+    { id: '3-5', title: '3の倍数は Fizz', text: '1 から a まで数えて、3の倍数のときは数のかわりに「Fizz」を出荷してね。',
+      days: [{ a: 6 }, { a: 10 }, { a: 2 }],
+      ref: 'for i in range(1, a + 1):\n    if i % 3 == 0:\n        print("Fizz")\n    else:\n        print(i)', starter: '',
+      hints: ['2-4 の数える工場を思い出そう', '3の倍数は i % 3 == 0 のときだよ'] },
+    { id: '3-6', kind: 'quiz', title: '予想クイズ: 分かれ道', question: 'この工場で出荷されるのはどれ？',
+      code: 'x = 7\nif x % 2 == 0:\n    print("A")\nelif x > 5:\n    print("B")\nelse:\n    print("C")', choices: ['A', 'B', 'C'] },
+  ] },
+];
+const STAGES = [];
+WORLDS.forEach((w, wi) => w.stages.forEach(st => { st.world = wi; st.idx = STAGES.length; STAGES.push(st); }));
+
+const G = { mode: 'stage', stage: null, lastStage: null, day: 0, stars: {}, unlockAll: false, quizPick: null, quizTries: 0, hintN: 0 };
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} },
+};
+const orderEl = $('order'), inspectEl = $('inspect'), resultEl = $('result'), mapEl = $('map'), inspectBtn = $('inspectBtn');
+
+function currentInput() {
+  const st = G.mode === 'stage' ? G.stage : null;
+  return st && st.days ? st.days[G.day] : null;
+}
+function restText() {
+  const st = G.mode === 'stage' ? G.stage : null;
+  if (!st) return '「▶ 実行」を押すと、ロボットがスタートから順番に機械を動かしていくよ。右の倉庫の箱に、データの品物が出たり入ったりするのを見てね。';
+  if (st.kind === 'quiz') return 'このコードの工場で、出荷されるのは何かな？ 左の答えを選ぶと工場が動き出すよ。';
+  if (!A.prog) return '注文書を読んで、コードを書こう。倉庫には、入荷した品物がもう届いているよ。';
+  return `「▶ 実行」で${G.day + 1}日目の入荷を使って工場を動かすよ。最後まで動いたら、3日分を検品するよ。`;
+}
+// 画面を動かさずに最後まで実行する（検品用）
+function runHeadless(prog, input) {
+  const S = { env: new Map(), steps: 0 };
+  for (const [k, v] of Object.entries(input || {})) S.env.set(k, clone(v));
+  const out = [];
+  try {
+    for (const ev of runProgram(prog, S)) if (ev.t === 'act' && ev.kind === 'print') out.push(ev.out);
+    return { out, steps: S.steps };
+  } catch (e) { return { out, steps: S.steps, error: e }; }
+}
+function prepareStages() {
+  for (const st of STAGES) {
+    if (st.kind === 'quiz') {
+      const p = parseProgram(st.code); layoutProgram(p);
+      const r = runHeadless(p, null);
+      st.answer = r.out[r.out.length - 1];
+      if (!st.choices.includes(st.answer)) console.error('クイズの答えが選択肢にない', st.id, st.answer);
+      continue;
+    }
+    const p = parseProgram(st.ref); layoutProgram(p);
+    st.expected = []; st.tSteps = 0; st.tMachines = p.nodes.length;
+    for (const d of st.days) {
+      const r = runHeadless(p, d);
+      if (r.error) console.error('模範解答が動かない', st.id, r.error);
+      st.expected.push(r.out); st.tSteps += r.steps;
+    }
+  }
+}
+const starHtml = n => '★'.repeat(n) + `<span class="off">${'★'.repeat(3 - n)}</span>`;
+const fmtInput = d => Object.entries(d).map(([k, v]) => `${k} = ${rep(v)}`).join(',  ');
+const totalStars = () => STAGES.reduce((t, st) => t + (G.stars[st.id] || 0), 0);
+const unlocked = st => G.unlockAll || st.idx === 0 || (G.stars[STAGES[st.idx - 1].id] || 0) >= 1;
+function renderStarTotal() { $('starTotal').textContent = ` ★${totalStars()}`; }
+
+function renderOrder() {
+  const st = G.mode === 'stage' ? G.stage : null;
+  if (!st) { orderEl.hidden = true; return; }
+  orderEl.hidden = false;
+  const best = G.stars[st.id] || 0;
+  let body;
+  if (st.kind === 'quiz') {
+    body = `<p class="order-text">${esc(st.question)}</p>
+      <div class="choices">${st.choices.map(c => `<button class="choice${G.quizPick === c ? ' picked' : ''}" data-choice="${esc(c)}"${G.quizPick ? ' disabled' : ''}>${esc(c)}</button>`).join('')}</div>
+      <p class="order-note">答えを選ぶと工場が動き出すよ。このステージのコードは変えられないよ。</p>`;
+  } else {
+    const m = A.prog ? A.prog.nodes.length : 0;
+    const hints = st.hints || [];
+    body = `<p class="order-text">${esc(st.text)}</p>
+      <div class="days" role="group" aria-label="入荷の日">${st.days.map((_, i) => `<button data-day="${i}" aria-pressed="${i === G.day}">${i + 1}日目</button>`).join('')}</div>
+      <div class="order-ex"><div><span class="lbl">入荷</span><code>${esc(fmtInput(st.days[G.day]))}</code></div>
+        <div><span class="lbl">注文</span><code>${esc(st.expected[G.day].join(' / ') || '（出荷なし）')}</code></div></div>
+      <div class="goals"><span>機械 <b>${m}</b>台（★ 目標 ${st.tMachines}台以内）</span><span>歩数（★ 目標 3日分で ${st.tSteps}歩以内）</span></div>
+      ${hints.length ? `<div class="hints">${hints.slice(0, G.hintN).map(h => `<p>ヒント: ${esc(h)}</p>`).join('')}${G.hintN < hints.length ? `<button class="link" data-hint>ヒントを見る（${G.hintN + 1} / ${hints.length}）</button>` : ''}</div>` : ''}`;
+  }
+  orderEl.innerHTML = `<div class="order-head"><span class="stage-no">${st.id}</span><h3>${esc(st.title)}</h3><span class="stars" aria-label="いちばんよかった星 ${best}つ">${starHtml(best)}</span></div>${body}`;
+}
+function loadStage(st) {
+  G.mode = 'stage'; G.stage = st; G.lastStage = st; G.day = 0; G.hintN = 0; G.quizPick = null; G.quizTries = 0;
+  hideResult();
+  inspectEl.innerHTML = '<p class="empty">工場が最後まで動くか「検品する」を押すと、3日分の注文と照らし合わせるよ。</p>';
+  codeEl.readOnly = st.kind === 'quiz';
+  codeEl.value = st.kind === 'quiz' ? st.code : LS.get('cf-code-' + st.id, st.starter);
+  codeEl.scrollTop = 0;
+  LS.set('cf-last', st.id);
+  build();
+}
+function setMode(m) {
+  $('modeStage').setAttribute('aria-pressed', String(m === 'stage'));
+  $('modeFree').setAttribute('aria-pressed', String(m === 'free'));
+  $('freeCtl').hidden = m !== 'free';
+  $('openMap').hidden = m !== 'stage';
+  $('inspectPanel').hidden = m !== 'stage';
+  hideResult();
+  if (m === 'free') {
+    G.mode = 'free'; G.stage = null; codeEl.readOnly = false;
+    codeEl.value = SAMPLES[+sampleEl.value].code; codeEl.scrollTop = 0;
+    build();
+  } else loadStage(G.lastStage || STAGES[0]);
+}
+
+// ---- 検品 ----
+function diffMsg(exp, out) {
+  for (let i = 0; i < Math.max(exp.length, out.length); i++) {
+    if (out[i] === undefined) return `${i + 1}つ目の品物が足りないよ（注文: ${exp[i]}）`;
+    if (exp[i] === undefined) return `${i + 1}つ目は注文にない品物だよ（出荷: ${out[i]}）`;
+    if (out[i] !== exp[i]) return `${i + 1}つ目の品物がちがうよ（注文: ${exp[i]} ／ 出荷: ${out[i]}）`;
+  }
+  return '';
+}
+function failMsg(r) {
+  if (r.error) return r.error instanceof CodeError ? `${r.error.line}行目で止まったよ: ${r.error.message}` : `工場の中で問題がおきたよ: ${r.error.message}`;
+  return diffMsg(r.exp, r.out);
+}
+function inspect() {
+  const st = G.stage;
+  if (!st || st.kind === 'quiz' || A.stale) return;
+  if (!A.prog) { showResult(`<div class="stamp ng">未完成</div><p>まだ工場がないよ。注文書を読んで、コードを書いてね。</p><div class="actions"><button data-act="close">工場にもどる</button></div>`); return; }
+  A.running = false;
+  // 画面の工場の状態（くりかえし回数・分かれ道のランプ）は検品で書きかわらないように保存しておく
+  const saved = A.prog.nodes.map(n => [n.iterInfo, n.lastResult]);
+  const res = st.days.map((d, i) => { const r = runHeadless(A.prog, d); return { ...r, i, exp: st.expected[i], ok: !r.error && eq(r.out, st.expected[i]) }; });
+  A.prog.nodes.forEach((n, i) => { n.iterInfo = saved[i][0]; n.lastResult = saved[i][1]; });
+  const ok = res.every(r => r.ok);
+  const machines = A.prog.nodes.length, steps = res.reduce((t, r) => t + r.steps, 0);
+  const s2 = machines <= st.tMachines, s3 = steps <= st.tSteps;
+  const stars = ok ? 1 + (s2 ? 1 : 0) + (s3 ? 1 : 0) : 0;
+  const isBest = stars > (G.stars[st.id] || 0);
+  if (isBest) { G.stars[st.id] = stars; LS.set('cf-stars', G.stars); }
+  inspectEl.innerHTML = res.map(r => `<div class="day-res ${r.ok ? 'ok' : 'ng'}"><div class="row">${r.i + 1}日目 <span>${r.ok ? '合格' : '不合格'}</span></div>
+    <div class="msg">入荷 <code>${esc(fmtInput(st.days[r.i]))}</code></div>
+    ${r.ok ? '' : `<div class="msg">${esc(failMsg(r))}</div><button class="link" data-watch="${r.i}">${r.i + 1}日目の入荷で工場を動かす</button>`}</div>`).join('');
+  renderOrder(); renderStarTotal(); updateButtons();
+  if (ok) {
+    const next = STAGES[st.idx + 1];
+    const tip = stars === 3 ? '' : !s2 ? '<p>★をもう1つ: 機械を減らせないかな？</p>' : '<p>★をもう1つ: ロボットの歩数を減らせないかな？</p>';
+    showResult(`<div class="stamp ok">検品合格</div><div class="big-stars" aria-label="星 ${stars}つ">${starHtml(stars)}</div>
+      <ul class="crit"><li><span class="mk">★</span>3日分とも注文どおりに出荷できた</li>
+      <li class="${s2 ? '' : 'miss'}"><span class="mk">${s2 ? '★' : '−'}</span>機械 ${machines}台（目標 ${st.tMachines}台以内）</li>
+      <li class="${s3 ? '' : 'miss'}"><span class="mk">${s3 ? '★' : '−'}</span>歩数 ${steps}（目標 ${st.tSteps}歩以内）</li></ul>
+      ${tip}<div class="actions">${next ? '<button class="primary" data-act="next">次のステージへ</button>' : ''}<button data-act="close">工場にもどる</button></div>`);
+  } else {
+    const bad = res.find(r => !r.ok);
+    showResult(`<div class="stamp ng">検品不合格</div><p><b>${bad.i + 1}日目:</b> ${esc(failMsg(bad))}</p>
+      <div class="actions"><button class="primary" data-watch="${bad.i}">${bad.i + 1}日目の入荷で工場を動かす</button><button data-act="close">工場にもどる</button></div>`);
+  }
+}
+function watchDay(i) {
+  hideResult(); G.day = i; resetRun(); renderOrder();
+  A.running = true; updateButtons();
+}
+
+// ---- 予想クイズ ----
+function pickQuiz(c) {
+  if (G.quizPick) return;
+  G.quizPick = c; G.quizTries++;
+  hideResult(); resetRun(); renderOrder();
+  A.running = true; updateButtons();
+}
+function quizResult() {
+  const st = G.stage, ok = G.quizPick === st.answer;
+  const next = STAGES[st.idx + 1];
+  if (ok) {
+    const stars = G.quizTries === 1 ? 3 : G.quizTries === 2 ? 2 : 1;
+    if (stars > (G.stars[st.id] || 0)) { G.stars[st.id] = stars; LS.set('cf-stars', G.stars); }
+    renderOrder(); renderStarTotal();
+    showResult(`<div class="stamp ok">正解</div><div class="big-stars" aria-label="星 ${stars}つ">${starHtml(stars)}</div>
+      <p>出荷されたのは <b>${esc(st.answer)}</b>。${G.quizTries === 1 ? '1回で当てたね！' : `${G.quizTries}回目で当たったよ。`}</p>
+      <div class="actions">${next ? '<button class="primary" data-act="next">次のステージへ</button>' : ''}<button data-act="close">工場にもどる</button></div>`);
+  } else {
+    showResult(`<div class="stamp ng">ざんねん</div><p>あなたの予想は <b>${esc(G.quizPick)}</b>、出荷されたのは <b>${esc(st.answer)}</b> だったよ。倉庫の箱の中身がどう変わったか、「1つ進める」で見なおしてみよう。</p>
+      <div class="actions"><button class="primary" data-act="retry">もう一度えらぶ</button><button data-act="close">工場を見なおす</button></div>`);
+  }
+}
+function onRunDone() {
+  if (G.mode !== 'stage' || !G.stage) return;
+  setTimeout(() => { if (!A.done) return; G.stage.kind === 'quiz' ? quizResult() : inspect(); }, 450);
+}
+
+// ---- 結果・ステージ一覧 ----
+function showResult(html) { resultEl.innerHTML = `<div class="result-card" role="dialog" aria-live="polite">${html}</div>`; resultEl.hidden = false; }
+function hideResult() { resultEl.hidden = true; }
+function renderMap() {
+  mapEl.innerHTML = `<div class="map-card" role="dialog" aria-modal="true" aria-labelledby="mapTitle">
+    <div class="map-head"><h2 id="mapTitle">ステージ一覧</h2><span class="star-total">★${totalStars()} / ${STAGES.length * 3}</span><button data-act="mapclose">とじる</button></div>
+    ${WORLDS.map((w, wi) => `<section class="world"><h3><span>ワールド${wi + 1}</span>${esc(w.name)}</h3><p>${esc(w.learn)}</p>
+      <div class="stage-grid">${w.stages.map(st => { const un = unlocked(st); return `<button class="stage-btn${st.kind === 'quiz' ? ' quiz' : ''}${G.stage === st ? ' cur' : ''}" data-stage="${st.id}"${un ? '' : ' disabled'}>
+        <span class="sid">${st.id}${st.kind === 'quiz' ? '・予想クイズ' : ''}</span><span class="st">${esc(st.title)}</span><span class="stars">${un ? starHtml(G.stars[st.id] || 0) : 'まだ開いていないよ'}</span></button>`; }).join('')}</div></section>`).join('')}
+    <label class="unlock"><input type="checkbox" id="unlockAll"${G.unlockAll ? ' checked' : ''}> 全部のステージを開ける（おためし用）</label></div>`;
+}
+function openMap() { renderMap(); mapEl.hidden = false; const b = mapEl.querySelector('.cur') || mapEl.querySelector('.stage-btn:not(:disabled)'); if (b) b.focus(); }
+function closeMap() { mapEl.hidden = true; }
+
+orderEl.addEventListener('click', e => {
+  const d = e.target.closest('[data-day]'), c = e.target.closest('[data-choice]'), h = e.target.closest('[data-hint]');
+  if (d) { G.day = +d.dataset.day; hideResult(); resetRun(); renderOrder(); }
+  else if (c) pickQuiz(c.dataset.choice);
+  else if (h) { G.hintN++; renderOrder(); }
+});
+inspectEl.addEventListener('click', e => { const w = e.target.closest('[data-watch]'); if (w) watchDay(+w.dataset.watch); });
+resultEl.addEventListener('click', e => {
+  const w = e.target.closest('[data-watch]'), a = e.target.closest('[data-act]');
+  if (w) return watchDay(+w.dataset.watch);
+  if (!a) return;
+  const act = a.dataset.act;
+  if (act === 'close') hideResult();
+  else if (act === 'next') { const nx = STAGES[G.stage.idx + 1]; if (nx) loadStage(nx); }
+  else if (act === 'retry') { G.quizPick = null; hideResult(); resetRun(); renderOrder(); }
+});
+mapEl.addEventListener('click', e => {
+  if (e.target === mapEl) return closeMap();
+  const b = e.target.closest('[data-stage]'), a = e.target.closest('[data-act]');
+  if (a && a.dataset.act === 'mapclose') return closeMap();
+  if (b) { closeMap(); loadStage(STAGES.find(st => st.id === b.dataset.stage)); }
+});
+mapEl.addEventListener('change', e => { if (e.target.id === 'unlockAll') { G.unlockAll = e.target.checked; LS.set('cf-unlock', G.unlockAll); renderMap(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !mapEl.hidden) closeMap(); });
+$('openMap').addEventListener('click', openMap);
+$('modeStage').addEventListener('click', () => { if (G.mode !== 'stage') setMode('stage'); });
+$('modeFree').addEventListener('click', () => { if (G.mode !== 'free') setMode('free'); });
+inspectBtn.addEventListener('click', () => { hideResult(); inspect(); });
+
+function initGame() {
+  prepareStages();
+  G.stars = LS.get('cf-stars', {}) || {};
+  G.unlockAll = !!LS.get('cf-unlock', false);
+  renderStarTotal();
+  const last = STAGES.find(st => st.id === LS.get('cf-last', null));
+  G.lastStage = last && unlocked(last) ? last : STAGES[0];
+  setMode('stage');
+}
+
 // ============ 操作 ============
 SAMPLES.forEach((s, i) => { const o = document.createElement('option'); o.value = i; o.textContent = s.name; sampleEl.appendChild(o); });
 sampleEl.value = '0';
-codeEl.value = SAMPLES[0].code;
 
 let timer = 0;
-codeEl.addEventListener('input', () => { A.hlLine = null; renderHL(); clearTimeout(timer); timer = setTimeout(build, 450); });
+codeEl.addEventListener('input', () => {
+  A.hlLine = null; renderHL(); hideResult();
+  if (G.mode === 'stage' && G.stage && G.stage.kind !== 'quiz') LS.set('cf-code-' + G.stage.id, codeEl.value);
+  clearTimeout(timer); timer = setTimeout(build, 450);
+});
 codeEl.addEventListener('scroll', () => { hlEl.scrollTop = codeEl.scrollTop; hlEl.scrollLeft = codeEl.scrollLeft; });
 codeEl.addEventListener('keydown', e => {
   if (e.key === 'Tab') {
@@ -1424,6 +1805,8 @@ codeEl.addEventListener('keydown', e => {
 sampleEl.addEventListener('change', () => { codeEl.value = SAMPLES[+sampleEl.value].code; codeEl.scrollTop = 0; build(); });
 runBtn.addEventListener('click', () => {
   if (!A.prog || A.stale) return;
+  if (G.mode === 'stage' && G.stage && G.stage.kind === 'quiz' && !G.quizPick) return;
+  hideResult();
   if (A.done || A.error) resetRun();
   A.running = !A.running; A.stepping = false;
   updateButtons();
@@ -1451,7 +1834,7 @@ cv.addEventListener('click', e => {
 });
 
 renderHL();
-build();
+initGame();
 requestAnimationFrame(frame);
 if (document.fonts && document.fonts.load) {
   Promise.all([document.fonts.load(`600 13px ${MONO}`), document.fonts.load(`800 11px ${ROUND}`)]).then(() => { if (!A.running) build(); }).catch(() => {});
