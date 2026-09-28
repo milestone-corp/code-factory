@@ -239,6 +239,11 @@ for n in nums:
     if n >= 10:
         big.append(n)
 print(big)` },
+  { name: 'フィボナッチ数列（配列を育てる）', code:
+`fib = [0, 1]
+for i in range(8):
+    fib.append(fib[i] + fib[i + 1])
+print(fib)` },
   { name: 'while でカウントダウン', code:
 `count = 3
 while count > 0:
