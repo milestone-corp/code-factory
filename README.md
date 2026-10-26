@@ -5,6 +5,10 @@
 - モックアップ: `index.html`（ブラウザで直接開ける単一ファイル。外部依存は Google Fonts のみ）
 - 遊べるページ: https://milestone-corp.github.io/code-factory/ （GitHub Pages。main に push すると自動で更新される）
 
+## 次のテーマ: 細胞の中の宇宙
+
+細胞の中で働くオブジェクトを子ども向けに可視化する。描くオブジェクトの一覧（案）: [docs/cell-objects.md](docs/cell-objects.md)
+
 ## 現在のモックアップ（v0）
 
 コードと工場部品の対応:
