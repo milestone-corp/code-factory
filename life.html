@@ -125,6 +125,26 @@ button.link{background:none;border:0;padding:0;color:var(--focus);font-weight:70
 .foot summary{cursor:pointer;font-weight:700}
 .foot ul{margin:6px 0 0;padding-left:1.2em}
 
+.withmap{grid-template-columns:150px minmax(0,1fr) 150px}
+.mapbox{display:flex;flex-direction:column;align-items:center;gap:4px}
+.mapbox svg{width:150px;height:auto}
+.here{font-size:12px;font-weight:800;text-align:center;line-height:1.4;color:var(--c-guard);min-height:1.4em}
+svg.body .sil{fill:var(--line);opacity:.75}
+svg.body .sil .limb{fill:none;stroke:var(--line);stroke-width:17;stroke-linecap:round}
+svg.body .sil .leg{fill:none;stroke:var(--line);stroke-width:25;stroke-linecap:round}
+svg.body .org{fill:none;stroke:var(--muted);stroke-width:1;opacity:.45}
+svg.body .trail{fill:none;stroke:var(--c-guard);stroke-width:2;stroke-dasharray:4 3;opacity:.8}
+svg.body .dots circle{fill:var(--c-guard);opacity:.6}
+svg.body .pin{fill:var(--c-guard);transition:transform .7s ease}
+svg.body .halo{fill:var(--c-guard);opacity:.25;animation:halo 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+svg.body .side{font-size:11px;fill:var(--muted)}
+@keyframes halo{50%{transform:scale(1.6);opacity:.08}}
+.odds .place{color:var(--c-guard);font-size:15px}
+.lifewrap{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:14px;align-items:start}
+.lifewrap>div{display:flex;flex-direction:column;gap:14px;min-width:0}
+.lifemap{position:sticky;top:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 8px}
+.pinlbl{display:block;font-size:12px;font-weight:800;color:var(--c-guard)}
+.ten small{display:block;color:var(--muted);font-size:11px;margin:2px 0 4px;line-height:1.35}
 @media (max-width:900px){ .grid{grid-template-columns:minmax(0,1fr)} }
 @media (max-width:560px){
   .brand h1{font-size:24px}
@@ -132,8 +152,12 @@ button.link{background:none;border:0;padding:0;color:var(--focus);font-weight:70
   .portrait{width:100%}
   .timeline li{grid-template-columns:1fr;gap:2px}
   .timeline .when{text-align:left}
+  .withmap{grid-template-columns:1fr}
+  .lifewrap{grid-template-columns:1fr}
+  .lifemap{order:-1;position:static;display:flex;justify-content:center}
+  .lifemap svg{width:120px}
 }
-@media (prefers-reduced-motion: reduce){ .card,.ending,.timeline li,.ten div{animation:none} }
+@media (prefers-reduced-motion: reduce){ .card,.ending,.timeline li,.ten div,svg.body .halo{animation:none} svg.body .pin{transition:none} }
 </style>
 </head>
 <body>
@@ -167,6 +191,7 @@ button.link{background:none;border:0;padding:0;color:var(--focus);font-weight:70
               <li>合計36兆、核のない血液の細胞（赤血球・血小板）約29兆、白血球 約3.4兆: Hatton ら（2023）</li>
               <li>赤血球と血小板の割合、血管内皮細胞・神経細胞・グリア細胞・肝細胞・脂肪細胞の数: Sender, Fuchs, Milo（2016, PLoS Biology）の推定をもとにした概数</li>
               <li>目・耳の細胞の数: 網膜の視細胞（片目で桿体 約9200万、錐体 約460万）、うずまき管の有毛細胞（片耳で約1万5000）の教科書的な値</li>
+              <li>生まれる場所は、その細胞が体のどこに多いかの大まかな割合で選ぶ（例: 神経細胞の約8割は小脳、大人の血液の細胞は骨盤や背骨などの骨髄で生まれる）。細かい割合は見積もり</li>
               <li>「△」の数は、このページを作るときの大まかな見積もり。研究によって数倍ちがうことがある</li>
               <li>寿命はおおよその値。一生の中の出来事の起こりやすさは物語として決めたもので、本当の確率ではない</li>
             </ul>
@@ -250,136 +275,229 @@ TYPES.push({id: 'other', name: 'そのほかの細胞', nick: 'いろいろな�
 const TIERS = [[1e-2, 'よくある', 't1'], [1e-3, 'ちょっとめずらしい', 't2'], [1e-4, 'めずらしい', 't3'], [1e-6, 'レア', 't4'], [0, '超レア', 't5']];
 const tier = t => TIERS.find(([p]) => t.n / TOTAL >= p);
 
+// ===== 体の地図（正面から見た図。x < 100 が体の右側） =====
+// [x, y, 左右がある場所なら 1]。左右がある場所は「体の右側」の座標を書き、左側は左右反転する
+const PT = {
+  skull: [100, 14], forehead: [100, 24], brain: [100, 30], brainBack: [100, 20], cerebellum: [106, 52], hippo: [92, 34],
+  eye: [91, 40, 1], nose: [100, 47], cheek: [88, 50, 1], ear: [74, 42, 1], earlobe: [75, 52, 1], tongue: [100, 57], throat: [100, 66],
+  neckNode: [91, 74, 1], thymus: [100, 96], sternum: [100, 110], aorta: [100, 102], rib: [78, 126, 1], lung: [84, 116, 1],
+  heart: [107, 124], heartLV: [111, 128], heartRV: [101, 128], atrium: [106, 116], armpit: [69, 96, 1], shoulder: [66, 84, 1],
+  liver: [86, 150], liverL: [100, 148], stomach: [116, 150], spleen: [128, 146], pancreas: [108, 162], panHead: [96, 164], panTail: [122, 158],
+  kidney: [86, 168, 1], duodenum: [93, 172], jejunum: [108, 184], ileum: [94, 198], colon: [78, 186], belly: [100, 206], bladder: [100, 218],
+  back: [118, 138], spine: [100, 176], pelvis: [80, 214, 1], buttock: [77, 226, 1], groin: [89, 228, 1],
+  upperArm: [56, 118, 1], innerElbow: [52, 154, 1], elbow: [49, 156, 1], forearm: [47, 186, 1], backHand: [43, 222, 1], palm: [43, 226, 1], indexFinger: [40, 238, 1],
+  femurTop: [84, 238, 1], thigh: [84, 264, 1], knee: [84, 302, 1], shin: [84, 340, 1], calf: [84, 350, 1], sole: [82, 418, 1], bigToe: [92, 428, 1],
+};
+function mkPlace(key, label, side) {
+  const [x, y, pair] = PT[key];
+  const s = pair ? (side || ['右', '左'][rint(0, 1)]) : '';
+  return {key, label: label.replace('{side}', s), x: pair && s === '左' ? 200 - x : x, y};
+}
+function wpick(list) { const tot = list.reduce((s, a) => s + a[2], 0); let r = Math.random() * tot; for (const a of list) { r -= a[2]; if (r < 0) return a; } return list[0]; }
+const anyPlace = list => { const a = wpick(list); return mkPlace(a[0], a[1]); };
+
+// [場所, 名前, 重み, (役割)]。重みは、その種類の細胞がどこに多いかの大まかな割合
+const MARROW = [['pelvis', '{side}の骨盤（こしの骨）の骨髄', 40], ['spine', '背骨の骨髄', 28], ['skull', '頭の骨の骨髄', 12], ['rib', '{side}のろっ骨の骨髄', 10], ['sternum', '胸骨（むねの真ん中の骨）の骨髄', 4], ['femurTop', '{side}の太ももの骨のつけ根の骨髄', 4], ['shoulder', '{side}の肩の骨の骨髄', 2]];
+const INJ = [['knee', '{side}ひざのすり傷', 30], ['indexFinger', '{side}手の人さし指の切り傷', 20], ['bigToe', '{side}足の親指のけが', 12], ['elbow', '{side}ひじのすり傷', 15], ['forehead', 'おでこのたんこぶの中', 5], ['sole', '{side}足のうらのとげの傷', 8], ['shin', '{side}すねのすり傷', 10]];
+const VESSELS = [['lung', '{side}の肺の毛細血管', 20], ['thigh', '{side}太ももの筋肉の毛細血管', 14], ['back', '背中の筋肉の毛細血管', 10], ['jejunum', '腸の血管', 10], ['brain', '脳の血管', 8], ['liver', '肝臓の血管', 8], ['calf', '{side}ふくらはぎの毛細血管', 8], ['kidney', '{side}の腎臓の血管', 6], ['upperArm', '{side}二の腕の毛細血管', 6], ['heart', '心臓の血管（冠動脈）', 3], ['belly', 'おなかの皮ふの毛細血管', 3], ['backHand', '{side}手の甲の毛細血管', 2], ['bigToe', '{side}足の親指の毛細血管', 1], ['aorta', '大動脈', 1], ['eye', '{side}目の網膜の血管', .5], ['earlobe', '{side}耳たぶの毛細血管', .5]];
+const LYMPH = [['neckNode', '{side}首のリンパ節', 25], ['armpit', '{side}わきの下のリンパ節', 20], ['groin', '{side}足のつけ根のリンパ節', 20], ['jejunum', '腸のまわりのリンパ節', 25], ['spleen', '脾臓', 10]];
+const GERM = [['throat', 'のど（へんとう）', 30], ['lung', '{side}の肺', 20], ...INJ];
+const BORN = {
+  rbc: MARROW, plt: MARROW, lym: MARROW, neu: MARROW,
+  endo: VESSELS,
+  hep: [['liver', '肝臓の右側（右葉）', 70], ['liverL', '肝臓の左側（左葉）', 30]],
+  skin: [['thigh', '{side}太もも', 18], ['back', '背中', 14], ['calf', '{side}すね', 12], ['belly', 'おなか', 9], ['upperArm', '{side}二の腕', 8], ['buttock', '{side}おしり', 6], ['forearm', '{side}うで', 6], ['sole', '{side}足のうら', 3], ['knee', '{side}ひざ', 2], ['backHand', '{side}手の甲', 2], ['palm', '{side}手のひら', 2], ['forehead', 'おでこ', 1], ['cheek', '{side}ほっぺ', 1], ['indexFinger', '{side}手の人さし指', .5], ['bigToe', '{side}足の親指', .5], ['nose', '鼻の頭', .3], ['earlobe', '{side}耳たぶ', .2]],
+  gut: [['jejunum', '小腸のまんなか（空腸）', 35], ['ileum', '小腸のおわり（回腸）', 35], ['colon', '大腸', 20], ['duodenum', '小腸のはじめ（十二指腸）', 10]],
+  neuron: [['cerebellum', '小脳', 80, 'balance'], ['brain', '大脳の前のほう（考える場所）', 13, 'think'], ['brainBack', '大脳のうしろ（見る場所）', 4, 'see'], ['jejunum', '腸のかべ', 1, 'gut'], ['hippo', '海馬', .5, 'memory'], ['spine', 'せき髄', .2, 'move']],
+  glia: [['brain', '大脳', 75], ['cerebellum', '小脳', 20], ['spine', 'せき髄', 5]],
+  fat: [['belly', 'おなかの皮ふの下', 35], ['thigh', '{side}太もも', 20], ['buttock', '{side}おしり', 15], ['jejunum', 'おなかの中（内臓のまわり）', 15], ['upperArm', '{side}二の腕', 8], ['back', '背中', 3], ['cheek', '{side}ほっぺ', 2], ['sole', '{side}足のうら（クッション）', 2]],
+  muscle: [['thigh', '{side}太もも（大腿四頭筋）', 20], ['back', '背中', 15], ['buttock', '{side}おしり（大殿筋）', 12], ['calf', '{side}ふくらはぎ', 12], ['upperArm', '{side}二の腕（力こぶ）', 8], ['belly', 'おなか（腹筋）', 8], ['shoulder', '{side}肩', 6], ['forearm', '{side}うで', 6], ['cheek', '{side}ほっぺ（笑う筋肉）', 2], ['tongue', '舌', 1], ['bigToe', '{side}足の親指を動かす筋肉', 1], ['eye', '{side}目玉を動かす筋肉', .5]],
+  heart: [['heartLV', '心臓の左心室', 55], ['heartRV', '心臓の右心室', 25], ['atrium', '心臓の心房', 20]],
+  beta: [['pancreas', 'すい臓のからだ', 35], ['panTail', 'すい臓のしっぽ', 35], ['panHead', 'すい臓の頭', 30]],
+  rod: [['eye', '{side}目の網膜', 1]],
+  cone: [['eye', '{side}目の網膜（中心窩のまわり）', 95], ['eye', '{side}目の中心窩（見つめる真ん中）', 5, 'fovea']],
+  taste: [['tongue', '舌のおく', 45], ['tongue', '舌の先', 30], ['tongue', '舌のふち', 20], ['throat', 'のどのおく', 5]],
+  hair: [['ear', '{side}耳のうずまき管の入口近く（高い音の係）', 50, 'high'], ['ear', '{side}耳のうずまき管のおく（低い音の係）', 50, 'low']],
+  other: [['pelvis', '{side}の骨盤の骨髄（育ち中の血液の細胞）', 30], ['lung', '{side}の肺の奥（肺胞）', 20], ['kidney', '{side}の腎臓', 15], ['stomach', '胃のかべ', 10], ['shin', '{side}すねの骨', 10], ['back', '背中の皮ふの下（線維芽細胞）', 6], ['bladder', 'ぼうこう', 5], ['throat', 'のどの下（甲状腺）', 3], ['bigToe', '{side}足の親指の骨', 1]],
+};
+function bornIn(t) { const a = wpick(BORN[t.id]), p = mkPlace(a[0], a[1]); p.role = a[3]; return p; }
+
 // ===== 一生の物語（出来事の起こりやすさは物語として決めたもの） =====
+// 出来事は [いつ, 何が起きたか, 分かれ道なら 1, 場所]。場所があると地図のピンが動く
 const LIFE = {
-  rbc() {
-    const ev = [['0日目', '骨の中の血液工場（骨髄）で生まれた。'], ['骨髄を出る前', '核（設計図の図書館）をすててしまった。体をやわらかく折り曲げて、酸素を運ぶヘモグロビンを約2億7000万個も積むためだ。'], ['1日目', '血管へ出発！ 肺で酸素を受けとって、全身へ。体を1周するのに約1分。'], ['3日目', '自分より細い毛細血管を、体を折り曲げてすり抜けた。']];
+  rbc(b) {
+    const v = anyPlace(VESSELS.filter(a => a[0] !== 'lung'));
+    const ev = [['0日目', `${b.label}で生まれた。`, 0, b], ['骨髄を出る前', '核（設計図の図書館）をすててしまった。体をやわらかく折り曲げて、酸素を運ぶヘモグロビンを約2億7000万個も積むためだ。'],
+      ['1日目', '血管へ出発！ 心臓から肺へ行って酸素を受けとり、全身へ。体を1周するのに約1分。', 0, mkPlace('lung', '{side}の肺')], ['3日目', `${v.label}で、自分より細い通り道を、体を折り曲げてすり抜けた。`, 0, v]];
     let span = rint(110, 130), end; const x = Math.random();
-    if (x < .12) { span = rint(10, 100); ev.push([day(span), 'けがをした場所を通りかかって、血のかたまりにからめとられた。', 1]); end = ['かさぶたの一部になった', '傷口をふさぐかたまりの中で、役目を終えた。']; }
-    else if (x < .15) { const d = rint(10, 60); ev.push([day(d), '献血で体の外へ！ 冷やされた袋の中で、ほかの人のもとへ運ばれた。', 1], [day(d + 4), 'ほかの人の体の中で、また酸素を運びはじめた。']); end = ['ほかの人の体で働いた', '生まれた体とはちがう人の中で、最後まで酸素を運んだ。']; }
-    else { ev.push(['60日目ごろ', '運んでいる酸素は、自分では使わない。発電所（ミトコンドリア）がないので、ブドウ糖を半分に割ってエネルギーにしている。'], ['100日目ごろ', '体がだんだんかたくなって、細い血管を通りにくくなってきた。']); end = ['脾臓で食べられた', `${span}日目、脾臓のマクロファージに食べられた。体の鉄はリサイクルされて、新しい赤血球に使われる。`]; }
+    if (x < .12) { span = rint(10, 100); const p = anyPlace(INJ); ev.push([day(span), `${p.label}の近くを通りかかって、血のかたまりにからめとられた。`, 1, p]); end = ['かさぶたの一部になった', `${p.label}をふさぐかたまりの中で、役目を終えた。`, p]; }
+    else if (x < .15) { const d = rint(10, 60), p = mkPlace('innerElbow', '{side}ひじの内側'); ev.push([day(d), `献血の針で、${p.label}から体の外へ！ 冷やされた袋の中で、ほかの人のもとへ運ばれた。`, 1, p], [day(d + 4), 'ほかの人の体の中で、また酸素を運びはじめた。']); end = ['ほかの人の体で働いた', '生まれた体とはちがう人の中で、最後まで酸素を運んだ。']; }
+    else { ev.push(['60日目ごろ', '運んでいる酸素は、自分では使わない。発電所（ミトコンドリア）がないので、ブドウ糖を半分に割ってエネルギーにしている。'], ['100日目ごろ', '体がだんだんかたくなって、細い血管を通りにくくなってきた。']); const p = mkPlace('spleen', '脾臓'); end = ['脾臓で食べられた', `${span}日目、脾臓のマクロファージに食べられた。体の鉄はリサイクルされて、新しい赤血球に使われる。`, p]; }
     return {ev, end, span, stats: [['体を回った回数', '約' + jp(span * 1440) + '周']]};
   },
-  plt() {
-    const ev = [['0日目', '骨髄の「巨核球」という大きな細胞から、ちぎれて生まれた。1つの巨核球から数千個の血小板ができる。'], ['1日目', '核のない細胞のかけらとして、血管の中をパトロール。']];
+  plt(b) {
+    const ev = [['0日目', `${b.label}にいる「巨核球」という大きな細胞から、ちぎれて生まれた。1つの巨核球から数千個の血小板ができる。`, 0, b], ['1日目', '核のない細胞のかけらとして、血管の中をパトロール。']];
     let span = rint(7, 10), end;
-    if (Math.random() < .3) { span = rint(1, 7); ev.push([day(span), '血管に傷！ 形を変えて手をのばし、仲間とくっついて穴をふさいだ。', 1]); end = ['傷口のふたになった', '血が止まるまで、仲間と傷口をふさぎつづけた。']; }
-    else end = ['脾臓で片づけられた', `${span}日目、古くなって脾臓や肝臓で片づけられた。`];
+    if (Math.random() < .3) { span = rint(1, 7); const p = anyPlace(INJ); ev.push([day(span), `${p.label}！ 形を変えて手をのばし、仲間とくっついて血管の穴をふさいだ。`, 1, p]); end = ['傷口のふたになった', `${p.label}の血が止まるまで、仲間とふさぎつづけた。`, p]; }
+    else end = ['脾臓で片づけられた', `${span}日目、古くなって脾臓で片づけられた。`, mkPlace('spleen', '脾臓')];
     return {ev, end, span, stats: []};
   },
-  lym() {
-    const ev = [['0日目', '骨髄で生まれて、胸腺という「学校」へ。'], ['数日〜数週間', '自分の体を攻撃しないかテストされた。いっしょに入学した仲間の多くは不合格になった。'], ['卒業', 'リンパ節を見回る旅へ。自分が見分けられる敵は、世界でたった1種類だけ。']];
-    let span, end, x = Math.random();
+  lym(b) {
+    const node = anyPlace(LYMPH);
+    const ev = [['0日目', `${b.label}で生まれた。`, 0, b], ['数日後', '胸腺という「学校」へ。自分の体を攻撃しないかテストされた。いっしょに入学した仲間の多くは不合格になった。', 0, mkPlace('thymus', '胸腺')], ['卒業', `${node.label}を拠点に、見回りの旅へ。自分が見分けられる敵は、世界でたった1種類だけ。`, 0, node]];
+    let span, end; const x = Math.random();
     if (x < .6) { span = rint(120, 1500); ev.push([day(span * .7), '何年も見回ったけれど、担当の敵には出会わなかった。多くのリンパ球がそうだ。', 1]); end = ['出番がないまま役目を終えた', 'もしもの時のために、ずっと準備していた。それも大事な仕事だ。']; }
     else {
-      const d = rint(30, 300); ev.push([day(d), 'ついに担当の敵（ウイルス）を見つけた！', 1], [day(d + 3), '分裂して、同じ顔の仲間を何千個にも増やした。'], [day(d + 10), '仲間といっしょに、ウイルスに乗っとられた細胞をやっつけた。']);
-      if (Math.random() < .3) { span = rint(10, 50) * 365; ev.push([day(d + 30), '「記憶細胞」に選ばれた。同じ敵がまた来たら、すぐに戦える。', 1]); end = ['何十年も体を守った', '記憶細胞として、同じ敵が二度と暴れないように見張りつづけた。']; }
+      const d = rint(30, 300), g = anyPlace(GERM.slice(0, 2));
+      ev.push([day(d), `${g.label}でウイルスがあばれている！ 担当の敵だ。`, 1, g], [day(d + 3), '分裂して、同じ顔の仲間を何千個にも増やした。'], [day(d + 10), '仲間といっしょに、ウイルスに乗っとられた細胞をやっつけた。']);
+      if (Math.random() < .3) { span = rint(10, 50) * 365; ev.push([day(d + 30), '「記憶細胞」に選ばれた。同じ敵がまた来たら、すぐに戦える。', 1, node]); end = ['何十年も体を守った', '記憶細胞として、同じ敵が二度と暴れないように見張りつづけた。']; }
       else { span = d + rint(20, 40); end = ['戦いを終えて休んだ', '敵がいなくなると、増えた仲間の多くは静かに役目を終える。']; }
     }
     return {ev, end, span, stats: []};
   },
-  neu() {
-    const ev = [['0日目', '骨髄で生まれた。好中球は1日に約1000億個も作られる。'], ['8時間目', '血液に出て、数時間だけパトロール。']];
+  neu(b) {
+    const ev = [['0日目', `${b.label}で生まれた。好中球は1日に約1000億個も作られる。`, 0, b], ['8時間目', '血液に出て、数時間だけパトロール。']];
     let span, end;
     if (Math.random() < .6) {
-      span = rnd(1, 3); ev.push([day(.6), '細菌が入ってきた！ 血管のすき間をすり抜けて、現場へかけつけた。', 1], [day(.8), '細菌をまるごと飲みこんで、分解した。']);
-      if (Math.random() < .35) { ev.push([day(1), 'さいごの手段。自分のDNAをあみのように投げて、細菌をつかまえた。', 1]); end = ['あみを投げて戦った', 'DNAのあみで、細菌が広がるのを止めた。']; }
-      else end = ['戦って「うみ」になった', '細菌と戦って力つき、仲間といっしょに「うみ」になった。'];
-    } else { span = rnd(.5, 2); end = ['静かに片づけられた', '出番がないまま寿命が来て、マクロファージに片づけられた。']; }
+      span = rnd(1, 3); const p = anyPlace(GERM);
+      ev.push([day(.6), `${p.label}に細菌が入った！ 血管のすき間をすり抜けて、現場へかけつけた。`, 1, p], [day(.8), '細菌をまるごと飲みこんで、分解した。']);
+      if (Math.random() < .35) { ev.push([day(1), 'さいごの手段。自分のDNAをあみのように投げて、細菌をつかまえた。', 1]); end = ['あみを投げて戦った', `DNAのあみで、細菌が${p.label}から広がるのを止めた。`, p]; }
+      else end = ['戦って「うみ」になった', `${p.label}で細菌と戦って力つき、仲間といっしょに「うみ」になった。`, p];
+    } else { span = rnd(.5, 2); end = ['静かに片づけられた', '出番がないまま寿命が来て、脾臓のマクロファージに片づけられた。', mkPlace('spleen', '脾臓')]; }
     return {ev, end, span, stats: []};
   },
-  endo() {
-    const ev = [['0日目', '血管の内側に、タイルのように並んだ。'], ['1か月目', '表面をつるつるに保って、血がかたまらないようにしている。体の血管を全部つなぐと、約10万km（地球2周半）と言われる。'], ['半年目', '白血球が通りたがっていたので、すき間を開けて通してあげた。']];
-    if (Math.random() < .3) ev.push(['2年目', '近くでけが！ 分裂して伸び、新しい血管を作った。', 1]);
+  endo(b) {
+    const ev = [['0日目', `${b.label}の内側に、タイルのように並んだ。`, 0, b], ['1か月目', '表面をつるつるに保って、血がかたまらないようにしている。体の血管を全部つなぐと、約10万km（地球2周半）と言われる。'], ['半年目', '白血球が通りたがっていたので、すき間を開けて通してあげた。']];
+    if (Math.random() < .3) ev.push(['2年目', 'すぐ近くでけが！ 分裂して伸び、新しい血管を作った。', 1, b]);
     const span = rint(2, 6) * 365;
-    return {ev, end: ['となりの細胞にあとを任せた', '何年も働いたあと、自分で静かに役目を終え、となりの細胞が分裂してすき間をうめた。'], span, stats: []};
+    return {ev, end: ['となりの細胞にあとを任せた', `${b.label}で何年も働いたあと、自分で静かに役目を終え、となりの細胞が分裂してすき間をうめた。`, b], span, stats: []};
   },
-  hep() {
-    const ev = [['0日目', '肝臓で生まれた。核が2つある細胞も多い。'], ['1日目', '腸から運ばれてきた、栄養たっぷりの血液を受けとった。'], ['1週間目', '糖をためたり、血液のたんぱく質を作ったり、薬やアルコールを分解したり。仕事は500以上あると言われる。'], ['1か月目', '脂肪の消化を助ける「胆汁」を作って、腸へ送った。']];
+  hep(b) {
+    const ev = [['0日目', `${b.label}で生まれた。核が2つある肝細胞も多い。`, 0, b], ['1日目', '腸から運ばれてきた、栄養たっぷりの血液を受けとった。'], ['1週間目', '糖をためたり、血液のたんぱく質を作ったり、薬やアルコールを分解したり。仕事は500以上あると言われる。'], ['1か月目', '脂肪の消化を助ける「胆汁」を作って、腸へ送った。']];
     if (Math.random() < .2) ev.push(['半年目', '肝臓の一部が手術でなくなった！ 残った仲間と分裂して、元の大きさまで戻した。', 1]);
     const span = rint(200, 1000);
-    return {ev, end: ['新しい細胞にあとを任せた', `${fmtTime(span)}働いて、静かに役目を終えた。`], span, stats: []};
+    return {ev, end: ['新しい細胞にあとを任せた', `${fmtTime(span)}働いて、静かに役目を終えた。`, b], span, stats: []};
   },
-  skin() {
-    const ev = [['0日目', '皮ふのいちばん下の層で生まれた。'], ['1週間目', '下で生まれた新しい細胞に、少しずつ上へ押し上げられていく。かたいたんぱく質（ケラチン）を体にためていく。']];
+  skin(b) {
+    const ev = [['0日目', `${b.label}の皮ふの、いちばん下の層で生まれた。`, 0, b], ['1週間目', '下で生まれた新しい細胞に、少しずつ上へ押し上げられていく。かたいたんぱく質（ケラチン）を体にためていく。']];
     if (Math.random() < .25) ev.push(['10日目', '日焼け！ となりの色素細胞からメラニンの「日がさ」をもらって、核を紫外線から守った。', 1]);
     ev.push(['2週間目', 'いちばん上に着くと、核がなくなって平たくなった。もう生きていないけれど、体の壁として守りつづける。']);
     const span = rint(28, 45);
-    return {ev, end: ['垢になってはがれた', `${span}日目ごろ、垢になって体からはがれ落ちた。`], span, stats: []};
+    return {ev, end: ['垢になってはがれた', `${span}日目ごろ、${b.label}から垢になってはがれ落ちた。`, b], span, stats: []};
   },
-  gut() {
-    const ev = [['0日目', '腸のひだの谷底で生まれた。'], ['1日目', 'ひだ（じゅう毛）の先へ向かって、毎日少しずつ登っていく。'], ['2日目', '表面の細かい毛で、糖やアミノ酸を吸収して血液へ渡した。']];
+  gut(b) {
+    const colon = b.key === 'colon';
+    const ev = [['0日目', `${b.label}のかべの、くぼみの底で生まれた。`, 0, b], ['1日目', colon ? '表面へ向かって、毎日少しずつ登っていく。' : 'ひだ（じゅう毛）の先へ向かって、毎日少しずつ登っていく。'], ['2日目', colon ? '食べかすから水分を吸いとって、うんちをかためた。' : '表面の細かい毛で、糖やアミノ酸を吸収して血液へ渡した。']];
     if (Math.random() < .2) ev.push(['3日目', 'ばい菌が近づいてきた！ ねばねばの粘液に守られて、だいじょうぶだった。', 1]);
     const span = rint(3, 5);
-    return {ev, end: ['腸の中へはがれ落ちた', `${span}日目、ひだのてっぺんから腸の中へはがれ落ち、うんちの一部になった。体の中でいちばん入れかわりが速い細胞の1つ。`], span, stats: []};
+    return {ev, end: ['腸の中へはがれ落ちた', `${span}日目、${b.label}の表面から腸の中へはがれ落ち、うんちの一部になった。体の中でいちばん入れかわりが速い細胞の1つ。`, b], span, stats: []};
   },
-  neuron() {
-    const role = [['見る', '目からの信号を受けとって、形や動きを見分ける係になった。'], ['動かす', 'せき髄から足の指まで、1mもある腕（軸索）を伸ばして、筋肉に「動け」と伝える係になった。'], ['覚える', '海馬という場所で、新しいことを覚える係になった。']][rint(0, 2)];
-    const ev = [['生まれる前', 'お母さんのおなかの中で、持ち主より先に生まれた。'], ['生まれる前', '決められた場所まで、長い旅をした。'], ['0才', `${role[0]}: ${role[1]}`, 1], ['5才ごろ', '何千ものつなぎ目（シナプス）で、仲間とつながった。'], ['毎日', '電気の信号を送る。速いものは秒速100m以上。もう分裂はしない。']];
+  neuron(b) {
+    const role = {
+      balance: '体のバランスや、動きのタイミングを調整する係になった。じつは脳の神経細胞の約8割は小脳にいる。',
+      think: '考えたり、話したり、計画を立てたりする係の1つになった。',
+      see: '目からの信号を受けとって、形や動きを見分ける係になった。',
+      gut: '腸の動きを調整する係になった。腸には数億個の神経細胞があって「第2の脳」とも呼ばれる。',
+      memory: '新しいことを覚える係になった。',
+      move: '筋肉に「動け」と伝える係になった。',
+    }[b.role];
+    const ev = [['生まれる前', 'お母さんのおなかの中で、持ち主より先に生まれた。'], ['生まれる前', `${b.label}まで、長い旅をした。`, 0, b], ['0才', role, 1]];
+    if (b.role === 'move') { const t = mkPlace('bigToe', '{side}足の親指'); ev.push(['1才', `${t.label}の筋肉まで、1m近い腕（軸索）を伸ばした。体の中でいちばん長い細胞の1つだ。`, 1, t]); }
+    ev.push(['5才ごろ', '何千ものつなぎ目（シナプス）で、仲間とつながった。'], ['毎日', '電気の信号を送る。速いものは秒速100m以上。もう分裂はしない。']);
     const span = rint(70, 100) * 365;
-    return {ev, end: ['持ち主と一生をともにした', '生まれ変わることなく、持ち主の一生のあいだ、ずっと働きつづけた。'], span, stats: []};
+    return {ev, end: ['持ち主と一生をともにした', '生まれ変わることなく、持ち主の一生のあいだ、ずっと働きつづけた。', b], span, stats: []};
   },
-  glia() {
-    const kind = [['オリゴデンドロサイト', '神経細胞の腕に、脂肪の膜をぐるぐる巻いた。電気の信号が何十倍も速く伝わるようになる。'], ['アストロサイト', '血管から栄養を受けとって、神経細胞に届けた。つなぎ目のそうじもする。'], ['ミクログリア', '脳の中を見回り、こわれた部品やばい菌を食べて片づけた。']][rint(0, 2)];
-    const ev = [['0日目', '脳の中で生まれた。'], ['1か月目', `${kind[0]}になった。${kind[1]}`, 1], ['何年も', '神経細胞のすぐそばで、目立たないけれど休みなく働いた。']];
+  glia(b) {
+    const kind = [['オリゴデンドロサイト', '神経細胞の腕に、脂肪の膜をぐるぐる巻いた。電気の信号が何十倍も速く伝わるようになる。'], ['アストロサイト', '血管から栄養を受けとって、神経細胞に届けた。つなぎ目のそうじもする。'], ['ミクログリア', 'こわれた部品やばい菌を見つけて食べ、片づけた。']][rint(0, 2)];
+    const ev = [['0日目', `${b.label}で生まれた。`, 0, b], ['1か月目', `${kind[0]}になった。${kind[1]}`, 1], ['何年も', '神経細胞のすぐそばで、目立たないけれど休みなく働いた。']];
     const span = rint(3, 40) * 365;
-    return {ev, end: ['長く脳を支えた', `${fmtTime(span)}、神経細胞たちを支えつづけた。`], span, stats: []};
+    return {ev, end: ['長く脳を支えた', `${fmtTime(span)}、${b.label}で神経細胞たちを支えつづけた。`, b], span, stats: []};
   },
-  fat() {
-    const ev = [['0日目', 'おなかの皮ふの下で生まれた。'], ['1年目', '食べすぎた日は脂肪をためて、ふくらんだ。運動した日は脂肪を出して、しぼんだ。大人になると、脂肪細胞の数はあまり変わらず、大きさが変わる。'], ['3年目', '「もうおなかいっぱい」と脳に知らせる手紙（レプチン）を出した。']];
+  fat(b) {
+    const ev = [['0日目', `${b.label}で生まれた。`, 0, b], ['1年目', '食べすぎた日は脂肪をためて、ふくらんだ。運動した日は脂肪を出して、しぼんだ。大人になると、脂肪細胞の数はあまり変わらず、大きさが変わる。'], ['3年目', '「もうおなかいっぱい」と脳に知らせる手紙（レプチン）を出した。']];
     if (Math.random() < .3) ev.push(['5年目', '寒い冬。ためていた脂肪を出して、体を温めるエネルギーにした。', 1]);
     const span = rint(5, 15) * 365;
-    return {ev, end: ['新しい脂肪細胞と交代した', `${fmtTime(span)}働いて交代した。脂肪細胞は1年に約10分の1ずつ入れかわる。`], span, stats: []};
+    return {ev, end: ['新しい脂肪細胞と交代した', `${fmtTime(span)}働いて交代した。脂肪細胞は1年に約10分の1ずつ入れかわる。`, b], span, stats: []};
   },
-  muscle() {
-    const ev = [['0日目', 'たくさんの細胞が合体して生まれた。核が何百個もある、長さ数cmにもなる巨大な細胞だ。'], ['1年目', '「動け」の合図で、ぎゅっとちぢんだ。']];
+  muscle(b) {
+    const ev = [['0日目', `${b.label}で、たくさんの細胞が合体して生まれた。核が何百個もある、長さ数cmにもなる巨大な細胞だ。`, 0, b], ['1年目', '「動け」の合図で、ぎゅっとちぢんだ。']];
     if (Math.random() < .5) ev.push(['3年目', '持ち主が運動をがんばった！ 体の中の部品を増やして、太く強くなった。', 1]);
     if (Math.random() < .3) ev.push(['8年目', '激しい運動で傷ついた。そばで眠っていた「衛星細胞」が目をさまして、直してくれた。', 1]);
     const span = rint(10, 25) * 365;
-    return {ev, end: ['新しい筋肉にあとを任せた', `${fmtTime(span)}、体を動かしつづけた。`], span, stats: []};
+    return {ev, end: ['新しい筋肉にあとを任せた', `${fmtTime(span)}、${b.label}を動かしつづけた。`, b], span, stats: []};
   },
-  heart() {
-    const ev = [['生まれる前', 'お母さんのおなかの中で、持ち主の心臓ができるときに生まれた。'], ['毎日', '1日に約10万回、仲間といっせいにちぢんで血液を送り出す。休みは一度もない。'], ['10年目', '心筋細胞はほとんど入れかわらない。1年に入れかわるのは1%くらいより少ない。']];
+  heart(b) {
+    const room = {heartLV: '全身へ血液を送り出す、いちばん力のいる部屋だ。', heartRV: '肺へ血液を送り出す部屋だ。', atrium: '体じゅうから戻ってきた血液を受けとる部屋だ。'}[b.key];
+    const ev = [['生まれる前', `お母さんのおなかの中で、持ち主の心臓ができるときに${b.label}で生まれた。${room}`, 0, b], ['毎日', '1日に約10万回、仲間といっせいにちぢんで血液を送り出す。休みは一度もない。'], ['10年目', '心筋細胞はほとんど入れかわらない。1年に入れかわるのは1%くらいより少ない。']];
     const span = rint(70, 100) * 365;
-    return {ev, end: ['一生、動きつづけた', '持ち主の一生のあいだ、一度も休まずに動きつづけた。'], span, stats: [['ちぢんだ回数', '約' + jp(span * 1e5) + '回']]};
+    return {ev, end: ['一生、動きつづけた', '持ち主の一生のあいだ、一度も休まずに動きつづけた。', b], span, stats: [['ちぢんだ回数', '約' + jp(span * 1e5) + '回']]};
   },
-  beta() {
-    const ev = [['0日目', 'すい臓の「ランゲルハンス島」という小さな島で生まれた。'], ['毎日', 'ごはんのあと血液の糖が増えると、インスリンを出した。インスリンを受けとった細胞が糖を取りこんで、血液の糖が下がる。']];
+  beta(b) {
+    const ev = [['0日目', `${b.label}にある「ランゲルハンス島」という小さな島で生まれた。`, 0, b], ['毎日', 'ごはんのあと血液の糖が増えると、インスリンを出した。インスリンを受けとった細胞が糖を取りこんで、血液の糖が下がる。']];
     if (Math.random() < .3) ev.push(['10年目', 'おやつを食べすぎた日が続いて、大いそがしだった。', 1]);
     const span = rint(10, 40) * 365;
-    return {ev, end: ['長く血糖を見張った', `${fmtTime(span)}、血液の糖の見張りをつづけた。`], span, stats: []};
+    return {ev, end: ['長く血糖を見張った', `${fmtTime(span)}、血液の糖の見張りをつづけた。`, b], span, stats: []};
   },
-  rod() {
-    const ev = [['生まれる前', '目の奥の網膜で生まれた。'], ['毎日', '先っぽの光を受ける部分を、少しずつ作りかえている。'], ['毎晩', '暗い夜道でも、わずかな光をつかまえた。色はわからないけれど、明るさはとても敏感。']];
+  rod(b) {
+    const ev = [['生まれる前', `${b.label}で生まれた。`, 0, b], ['毎日', '先っぽの光を受ける部分を、少しずつ作りかえている。'], ['毎晩', '暗い夜道でも、わずかな光をつかまえた。色はわからないけれど、明るさにはとても敏感。']];
     const span = rint(70, 100) * 365;
-    return {ev, end: ['一生、光をつかまえた', '持ち主の一生のあいだ、暗やみの中の光を伝えつづけた。'], span, stats: []};
+    return {ev, end: ['一生、光をつかまえた', '持ち主の一生のあいだ、暗やみの中の光を伝えつづけた。', b], span, stats: []};
   },
-  cone() {
+  cone(b) {
     const c = ['赤', '緑', '青'][rint(0, 2)];
-    const ev = [['生まれる前', '目の奥の網膜で生まれた。'], ['0才', `${c}っぽい光を担当することになった。3種類の錐体細胞の信号を比べて、脳が色を決める。`, 1], ['毎日', '明るいところで、くっきりした色を見せた。']];
+    const ev = [['生まれる前', `${b.label}で生まれた。`, 0, b], ['0才', `${c}っぽい光を担当することになった。3種類の錐体細胞の信号を比べて、脳が色を決める。`, 1]];
+    ev.push(b.role === 'fovea' ? ['毎日', '持ち主が見つめたものを、いちばんくっきり見せる場所で働いた。文字を読むのもこの場所。'] : ['毎日', '明るいところで、くっきりした色を見せた。']);
     const span = rint(70, 100) * 365;
-    return {ev, end: ['一生、色を見せた', '持ち主の一生のあいだ、世界の色を伝えつづけた。'], span, stats: []};
+    return {ev, end: ['一生、色を見せた', '持ち主の一生のあいだ、世界の色を伝えつづけた。', b], span, stats: []};
   },
-  taste() {
+  taste(b) {
     const k = ['甘い', 'しょっぱい', 'すっぱい', '苦い', 'うま味'][rint(0, 4)];
-    const ev = [['0日目', '舌の「味蕾」というつぼみの中で生まれた。'], ['1日目', `「${k}」担当になった。`, 1], ['5日目', '給食の味を、脳に伝えた。']];
+    const ev = [['0日目', `${b.label}の「味蕾」というつぼみの中で生まれた。`, 0, b], ['1日目', `「${k}」担当になった。舌のどこにいても、5つの味のどれも感じる細胞がそろっている。`, 1], ['5日目', '給食の味を、脳に伝えた。']];
     const span = rint(8, 12);
-    return {ev, end: ['新しい味細胞と交代した', `${span}日目ごろ、新しい味細胞と交代した。`], span, stats: []};
+    return {ev, end: ['新しい味細胞と交代した', `${span}日目ごろ、新しい味細胞と交代した。`, b], span, stats: []};
   },
-  hair() {
-    const ev = [['生まれる前', '耳の奥のうずまき管で生まれた。'], ['0才', '音のふるえで頭の毛がゆれると、電気の信号に変えて脳へ送る。低い音・高い音のどちらを担当するかは、うずまきの場所で決まる。'], ['毎日', '友だちの声、音楽、鳥の声。たくさんの音をつかまえた。']];
+  hair(b) {
+    const ev = [['生まれる前', `${b.label}で生まれた。`, 0, b], ['0才', '音のふるえで頭の毛がゆれると、電気の信号に変えて脳へ送る。'], ['毎日', '友だちの声、音楽、鳥の声。たくさんの音をつかまえた。']];
     let end, span = rint(70, 100) * 365;
-    if (Math.random() < .2) { ev.push(['15年目', 'とても大きな音を長く聞いて、毛がこわれてしまった。ヒトの有毛細胞は生えかわらない。', 1]); span = 15 * 365; end = ['大きな音でこわれた', 'こわれた有毛細胞は、もう生えかわらない。大きな音から耳を守ろう。']; }
-    else end = ['一生、音をつかまえた', '持ち主の一生のあいだ、音を伝えつづけた。'];
+    if (Math.random() < (b.role === 'high' ? .3 : .1)) { ev.push(['15年目', 'とても大きな音を長く聞いて、毛がこわれてしまった。高い音の係ほどこわれやすい。ヒトの有毛細胞は生えかわらない。', 1]); span = 15 * 365; end = ['大きな音でこわれた', 'こわれた有毛細胞は、もう生えかわらない。大きな音から耳を守ろう。', b]; }
+    else end = ['一生、音をつかまえた', '持ち主の一生のあいだ、音を伝えつづけた。', b];
     return {ev, end, span, stats: []};
   },
-  other() {
-    const ev = [['0日目', '体のどこかで生まれた。骨、肺、腎臓、骨髄で育ち中の血液の細胞……。体には数百種類の細胞がいる。'], ['いつも', '自分の場所で、決められた仕事をこなした。']];
+  other(b) {
+    const ev = [['0日目', `${b.label}で生まれた。体には数百種類の細胞がいる。`, 0, b], ['いつも', '自分の場所で、決められた仕事をこなした。']];
     const span = rint(30, 3000);
-    return {ev, end: ['自分の場所で働いた', `${fmtTime(span)}働いた。どんな物語だったかは、これから書き足していく。`], span, stats: []};
+    return {ev, end: ['自分の場所で働いた', `${fmtTime(span)}働いた。どんな物語だったかは、これから書き足していく。`, b], span, stats: []};
   },
 };
 
+function bodyMap() {
+  return `<svg class="body" viewBox="0 0 200 452" role="img" aria-label="体の地図。赤いピンが細胞のいる場所">
+    <g class="sil">
+      <circle cx="100" cy="38" r="26"/><rect x="91" y="60" width="18" height="18" rx="4"/>
+      <path d="M64 80Q100 70 136 80L141 150Q143 200 132 232L68 232Q57 200 59 150Z"/>
+      <path class="limb" d="M67 86Q52 120 51 158Q47 192 43 224M133 86Q148 120 149 158Q153 192 157 224"/>
+      <path class="leg" d="M85 228L84 414M115 228L116 414"/>
+      <ellipse cx="85" cy="424" rx="13" ry="7"/><ellipse cx="115" cy="424" rx="13" ry="7"/>
+      <circle cx="42" cy="230" r="9"/><circle cx="158" cy="230" r="9"/>
+    </g>
+    <g class="org">
+      <ellipse cx="100" cy="31" rx="20" ry="15"/><circle cx="91" cy="40" r="3"/><circle cx="109" cy="40" r="3"/>
+      <ellipse cx="84" cy="118" rx="13" ry="22"/><ellipse cx="116" cy="118" rx="13" ry="22"/><ellipse cx="106" cy="124" rx="9" ry="10"/>
+      <ellipse cx="90" cy="150" rx="17" ry="9"/><ellipse cx="116" cy="151" rx="9" ry="7"/><ellipse cx="100" cy="188" rx="22" ry="18"/>
+    </g>
+    <polyline class="trail" points=""/><g class="dots"></g>
+    <g class="pin" style="transform:translate(100px,200px)"><circle class="halo" r="11"/><circle r="5"/></g>
+    <text x="8" y="448" class="side">からだの右</text><text x="192" y="448" text-anchor="end" class="side">からだの左</text>
+  </svg>`;
+}
+function setMap(root, places) {
+  if (!root || !places.length) return;
+  root.querySelector('.trail').setAttribute('points', places.map(p => `${p.x},${p.y}`).join(' '));
+  root.querySelector('.dots').innerHTML = places.slice(0, -1).map(p => `<circle cx="${p.x}" cy="${p.y}" r="3"/>`).join('');
+  const last = places[places.length - 1];
+  root.querySelector('.pin').style.transform = `translate(${last.x}px,${last.y}px)`;
+  const cap = root.parentElement.querySelector('.here'); if (cap) cap.textContent = last.label;
+}
 // ===== 図鑑（このブラウザにだけ保存） =====
 let dex = {};
 try { dex = JSON.parse(localStorage.getItem('cell36-dex') || '{}') || {}; } catch (e) { dex = {}; }
@@ -409,7 +527,7 @@ function intro() {
   stop(); setHead('誕生', '');
   stage.innerHTML = `<div class="intro">
     <div class="num">36<small>兆</small></div>
-    <p>大人の体は、約<b>36兆個</b>の細胞でできている。<br>そのうちのどれか1つとして、あなたは生まれる。<br>何の細胞になるかは選べない。数の多い細胞ほど、なりやすい。</p>
+    <p>大人の体は、約<b>36兆個</b>の細胞でできている。<br>そのうちのどれか1つとして、あなたは生まれる。<br>何の細胞になるか、体のどこに生まれるかは選べない。<br>数の多い細胞ほど、なりやすい。</p>
     <div class="btns"><button class="primary big" id="go">生まれる</button><button id="go10">10回まとめて生まれる</button></div>
   </div>`;
   $('#go').onclick = () => roll(1);
@@ -419,7 +537,7 @@ function intro() {
 function roll(count) {
   stop(); setHead('誕生', '');
   stage.innerHTML = `<div class="roll"><div><div class="lbl">体のどこかで……</div><div class="name" id="rn">？</div></div></div>`;
-  const results = Array.from({length: count}, pick);
+  const results = Array.from({length: count}, () => { const t = pick(); return {t, b: bornIn(t)}; });
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let k = 0; const N = reduce ? 1 : 16;
   const tick = () => {
@@ -427,62 +545,72 @@ function roll(count) {
     $('#rn').textContent = TYPES[(Math.random() * TYPES.length) | 0].name;
     if (k < N) timer = setTimeout(tick, 40 + k * k * 1.2);
     else {
-      for (const t of results) dex[t.id] = (dex[t.id] || 0) + 1;
+      for (const r of results) dex[r.t.id] = (dex[r.t.id] || 0) + 1;
       saveDex(); renderDex();
-      count === 1 ? reveal(results[0]) : showTen(results);
+      count === 1 ? reveal(results[0].t, results[0].b) : showTen(results);
     }
   };
   tick();
 }
 
-function oddsHtml(t) {
-  const [, label, cls] = tier(t), inv = TOTAL / t.n;
+const oddsText = t => TOTAL / t.n < 1.5 ? `${Math.round(t.n / TOTAL * 100)}%` : `${jp(TOTAL / t.n)}分の1`;
+function oddsHtml(t, b) {
+  const [, label, cls] = tier(t);
   return `<span class="tier" style="background:var(--${cls})">${label}</span>
     <dl class="odds">
+      <dt>生まれた場所</dt><dd class="place">${esc(b.label)}</dd>
       <dt>なかまの数</dt><dd>約${jp(t.n)}個 <span class="conf">${t.conf === '△' ? '△ 大まかな見積もり' : '○ 研究の推定'}</span></dd>
-      <dt>なれる確率</dt><dd class="big">${inv < 1.5 ? `${Math.round(t.n / TOTAL * 100)}%` : `${jp(inv)}分の1`}</dd>
-      <dt>すむ場所</dt><dd>${esc(t.where)}</dd>
+      <dt>なれる確率</dt><dd class="big">${oddsText(t)}</dd>
     </dl>`;
 }
+const mapBox = () => `<div class="mapbox">${bodyMap()}<div class="here"></div></div>`;
 
-function reveal(t) {
+function reveal(t, b) {
   setHead('誕生', 'あなたが生まれた細胞');
-  stage.innerHTML = `<div class="card">
+  stage.innerHTML = `<div class="card withmap">
       <div class="portrait">${svg(t)}</div>
-      <div><div class="nick">${esc(t.nick)}</div><h3>${esc(t.name)}に生まれた</h3>${oddsHtml(t)}<p class="job">${esc(t.job)}</p></div>
+      <div><div class="nick">${esc(t.nick)}</div><h3>${esc(t.name)}に生まれた</h3>${oddsHtml(t, b)}<p class="job">${esc(t.job)}</p></div>
+      ${mapBox()}
     </div>
     <div class="actions"><button class="primary big" id="live">一生をすごす</button><button id="again">生まれなおす</button></div>`;
-  $('#live').onclick = () => live(t);
+  requestAnimationFrame(() => setMap(stage.querySelector('svg.body'), [b]));
+  $('#live').onclick = () => live(t, b);
   $('#again').onclick = () => roll(1);
 }
 
-function live(t) {
+function live(t, b) {
   stop();
-  const life = LIFE[t.id]();
+  const life = LIFE[t.id](b);
   setHead('一生', `${t.name}として`);
-  stage.innerHTML = `<div class="card"><div class="portrait">${svg(t)}</div><div><div class="nick">${esc(t.nick)}</div><h3>${esc(t.name)}</h3><p class="job">${esc(t.where)}で、${esc(t.job)}</p></div></div>
+  stage.innerHTML = `<div class="card"><div class="portrait">${svg(t)}</div><div><div class="nick">${esc(t.nick)}</div><h3>${esc(t.name)}</h3><p class="job">${esc(b.label)}生まれ。${esc(t.job)}</p></div></div>
     <div class="lifebar"><span>誕生</span><div class="bar"><i id="lb"></i></div><span>${fmtTime(life.span)}</span></div>
-    <ol class="timeline" id="tl"></ol>
-    <div id="endArea"></div>
+    <div class="lifewrap"><div><ol class="timeline" id="tl"></ol><div id="endArea"></div></div><aside class="lifemap">${mapBox()}</aside></div>
     <div class="actions" id="skipRow"><button id="skip">最後まで見る</button></div>`;
-  const tl = $('#tl'); let i = 0;
+  const tl = $('#tl'), map = stage.querySelector('svg.body'), trail = [b]; let i = 0;
+  setMap(map, trail);
+  const show = () => {
+    const [when, what, br, at] = life.ev[i++];
+    tl.insertAdjacentHTML('beforeend', `<li class="${br ? 'branch' : ''}"><span class="when">${esc(when)}</span><div class="what">${at ? `<span class="pinlbl">📍${esc(at.label)}</span>` : ''}${esc(what)}</div></li>`);
+    if (at && at !== trail[trail.length - 1]) { trail.push(at); setMap(map, trail); }
+  };
   const step = () => {
     if (i < life.ev.length) {
-      const [when, what, br] = life.ev[i++];
-      tl.insertAdjacentHTML('beforeend', `<li class="${br ? 'branch' : ''}"><span class="when">${esc(when)}</span><div class="what">${esc(what)}</div></li>`);
+      show();
       $('#lb').style.width = (i / (life.ev.length + 1) * 100) + '%';
       tl.lastElementChild.scrollIntoView({block: 'nearest', behavior: 'smooth'});
       timer = setTimeout(step, 1700);
-    } else finish(t, life);
+    } else finish(t, b, life, map, trail);
   };
-  $('#skip').onclick = () => { stop(); while (i < life.ev.length) { const [when, what, br] = life.ev[i++]; tl.insertAdjacentHTML('beforeend', `<li class="${br ? 'branch' : ''}"><span class="when">${esc(when)}</span><div class="what">${esc(what)}</div></li>`); } finish(t, life); };
+  $('#skip').onclick = () => { stop(); while (i < life.ev.length) show(); finish(t, b, life, map, trail); };
   timer = setTimeout(step, 500);
 }
 
-function finish(t, life) {
+function finish(t, b, life, map, trail) {
   stop(); $('#lb').style.width = '100%'; $('#skipRow').remove();
-  const [title, text] = life.end;
-  const stats = [['生きた時間', fmtTime(life.span)], ...life.stats, ['なれる確率', TOTAL / t.n < 1.5 ? Math.round(t.n / TOTAL * 100) + '%' : jp(TOTAL / t.n) + '分の1']];
+  const [title, text, at] = life.end;
+  if (at && at !== trail[trail.length - 1]) { trail.push(at); setMap(map, trail); }
+  const last = trail[trail.length - 1];
+  const stats = [['生まれた場所', b.label], ...(last !== b ? [['最後の場所', last.label]] : []), ['生きた時間', fmtTime(life.span)], ...life.stats, ['なれる確率', oddsText(t)]];
   const noCore = t.id === 'rbc' || t.id === 'plt';
   $('#endArea').innerHTML = `<div class="ending">
       <div class="stamp">${esc(title)}</div><p>${esc(text)}</p>
@@ -493,23 +621,21 @@ function finish(t, life) {
   $('#endArea').scrollIntoView({block: 'nearest', behavior: 'smooth'});
   $('#again').onclick = () => roll(1);
   $('#copy').onclick = async () => {
-    const txt = `36兆分の1で「${t.name}」に生まれた（${stats[stats.length - 1][1]}）。${fmtTime(life.span)}生きて、${title}。`;
+    const txt = `36兆分の1で「${b.label}の${t.name}」に生まれた（${oddsText(t)}）。${fmtTime(life.span)}生きて、${title}。`;
     try { await navigator.clipboard.writeText(txt); $('#copied').textContent = 'コピーしたよ'; } catch (e) { $('#copied').textContent = txt; }
   };
 }
 
 function showTen(list) {
   setHead('10回まとめて', '');
-  const by = {}; for (const t of list) by[t.id] = (by[t.id] || 0) + 1;
-  const rbc = by.rbc || 0, best = list.reduce((a, b) => a.n < b.n ? a : b);
-  stage.innerHTML = `<div class="ten">${list.map((t, i) => `<div style="animation-delay:${i * 60}ms">${svg(t)}<b>${esc(t.name)}</b><span class="tier" style="background:var(--${tier(t)[2]})">${tier(t)[1]}</span></div>`).join('')}</div>
-    <p class="tensum">10回のうち、赤血球は<b>${rbc}回</b>。体の細胞の4つに3つは赤血球なので、10回生まれると、だいたい7〜8回は赤血球になる。いちばんめずらしかったのは<b>${esc(best.name)}</b>（${TOTAL / best.n < 1.5 ? Math.round(best.n / TOTAL * 100) + '%' : jp(TOTAL / best.n) + '分の1'}）。</p>
-    <div class="actions"><button class="primary big" id="liveBest">${esc(best.name)}の一生をすごす</button><button id="again10">もう一度10回</button><button id="back">ひとつずつ生まれる</button></div>`;
-  $('#liveBest').onclick = () => live(best);
+  const rbc = list.filter(r => r.t.id === 'rbc').length, best = list.reduce((a, r) => a.t.n <= r.t.n ? a : r);
+  stage.innerHTML = `<div class="ten">${list.map((r, i) => `<div style="animation-delay:${i * 60}ms">${svg(r.t)}<b>${esc(r.t.name)}</b><small>${esc(r.b.label)}</small><span class="tier" style="background:var(--${tier(r.t)[2]})">${tier(r.t)[1]}</span></div>`).join('')}</div>
+    <p class="tensum">10回のうち、赤血球は<b>${rbc}回</b>。体の細胞の4つに3つは赤血球なので、10回生まれると、だいたい7〜8回は赤血球になる。いちばんめずらしかったのは<b>${esc(best.b.label)}の${esc(best.t.name)}</b>（${oddsText(best.t)}）。</p>
+    <div class="actions"><button class="primary big" id="liveBest">${esc(best.t.name)}の一生をすごす</button><button id="again10">もう一度10回</button><button id="back">ひとつずつ生まれる</button></div>`;
+  $('#liveBest').onclick = () => live(best.t, best.b);
   $('#again10').onclick = () => roll(10);
   $('#back').onclick = intro;
 }
-
 renderMix(); renderDex(); intro();
 </script>
 </body>
