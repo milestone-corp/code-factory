@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>細胞工場</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;600;700&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap">
+<style>
+:root{
+  --bg:#E7EAE3; --panel:#F6F7F2; --ink:#1E272B; --muted:#5B676A; --line:#C9D0C6;
+  --narr-bg:#FFF6D6; --machine:#FFFFFF; --shadow:rgba(30,39,43,.16);
+  --floor:#E3E8DD; --grid:#D3DACF; --outside:#CBD5D2; --water:#6F9CC0;
+  --c-info:#2F6FD6; --c-build:#1F9357; --c-energy:#D9801A; --c-move:#8452D0; --c-guard:#D33F3F; --c-small:#66737A;
+  --robot:#F2C230; --robot-edge:#A77F0B; --focus:#2F6FD6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#14181B; --panel:#1B2024; --ink:#E4EAE6; --muted:#98A4A1; --line:#303940;
+    --narr-bg:#2E2913; --machine:#262D33; --shadow:rgba(0,0,0,.45);
+    --floor:#1F2529; --grid:#283036; --outside:#111518; --water:#5D88A8;
+    --c-info:#5C94F2; --c-build:#3DBB78; --c-energy:#F0A043; --c-move:#A67DF2; --c-guard:#F06A6A; --c-small:#8A969C;
+    --focus:#5C94F2;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#14181B; --panel:#1B2024; --ink:#E4EAE6; --muted:#98A4A1; --line:#303940;
+  --narr-bg:#2E2913; --machine:#262D33; --shadow:rgba(0,0,0,.45);
+  --floor:#1F2529; --grid:#283036; --outside:#111518; --water:#5D88A8;
+  --c-info:#5C94F2; --c-build:#3DBB78; --c-energy:#F0A043; --c-move:#A67DF2; --c-guard:#F06A6A; --c-small:#8A969C;
+  --focus:#5C94F2;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"M PLUS Rounded 1c",system-ui,"Hiragino Maru Gothic ProN",sans-serif;font-size:14px}
+.app{box-sizing:border-box;max-width:1680px;margin:0 auto;padding-inline:16px;padding-block:14px 18px;display:flex;flex-direction:column;gap:12px;min-height:100%}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px}
+.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.brand h1{font-family:"Dela Gothic One","M PLUS Rounded 1c",sans-serif;font-weight:400;font-size:28px;margin:0;letter-spacing:.03em}
+.brand h1 span{display:inline-block;background:var(--c-build);color:#fff;padding:0 .25em;border-radius:4px;margin-right:.1em}
+.brand p{margin:0;color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.controls a{color:var(--focus);font-weight:700;font-size:13px}
+button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer}
+button:hover{border-color:var(--ink)}
+button.primary{background:var(--robot);color:#1E272B;border:2px solid var(--robot-edge);font-weight:800;min-width:8.5em}
+button.link{background:none;border:0;padding:0;color:var(--focus);font-weight:700;font-size:12px;text-decoration:underline}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.speed{display:flex;align-items:center;gap:6px}
+.speed label{color:var(--muted);font-size:13px}
+.speed output{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;min-width:3.2em;font-variant-numeric:tabular-nums}
+input[type=range]{accent-color:var(--robot-edge);width:110px}
+.zoom{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.zoom button{border:0;border-radius:0;padding:7px 12px}
+.zoom button+button{border-left:1px solid var(--line)}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:12px;height:clamp(540px,calc(100vh - 100px),960px)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0;min-width:0}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 8px;flex-wrap:wrap}
+.ph h2{margin:0;font-size:15px;font-weight:800;letter-spacing:.04em}
+.hint{color:var(--muted);font-size:12px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.narr{margin:0 10px 8px;padding:8px 12px;border-radius:8px;background:var(--narr-bg);min-height:2.9em;display:flex;gap:10px;align-items:center;line-height:1.5;box-sizing:border-box}
+.narr .lnb{flex:none;font-size:12px;font-weight:800;background:var(--ink);color:var(--panel);border-radius:4px;padding:2px 7px}
+.stage{position:relative;flex:1;min-height:0;margin:0 10px;border-radius:8px;border:1px solid var(--line);overflow:hidden;background:var(--outside)}
+#cv{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#cv.dragging{cursor:grabbing}
+.badge{position:absolute;left:8px;bottom:8px;max-width:min(440px,calc(100% - 16px));background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px;line-height:1.5;color:var(--muted);opacity:.94;pointer-events:none}
+.badge b{color:var(--ink)}
+.opts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:8px 12px 10px;color:var(--muted);font-size:12px}
+.opts label{display:flex;align-items:center;gap:6px}
+
+.side{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto}
+.story{list-style:none;margin:0;padding:0 10px 10px;display:flex;flex-direction:column;gap:3px;counter-reset:st}
+.story li{counter-increment:st;display:flex;gap:8px;align-items:baseline;padding:4px 8px;border-radius:6px;line-height:1.45;font-size:13px;color:var(--muted)}
+.story li::before{content:counter(st);flex:none;width:1.5em;height:1.5em;border-radius:50%;display:inline-grid;place-items:center;font-size:11px;font-weight:800;background:var(--line);color:var(--ink)}
+.story li b{color:var(--ink)}
+.story li.on{background:var(--narr-bg);color:var(--ink)}
+.story li.on::before{background:var(--robot);color:#1E272B}
+.energy{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.55}
+.counts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.counts div{border:1px solid var(--line);border-radius:8px;padding:5px 6px;text-align:center;font-size:11px;color:var(--muted)}
+.counts b{display:block;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:18px;color:var(--c-energy);font-variant-numeric:tabular-nums}
+.energy p{margin:0;color:var(--muted)}
+.info{padding:0 12px 12px;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.6}
+.info .empty{color:var(--muted);margin:0}
+.info .head{display:flex;align-items:center;gap:8px}
+.info .chip{width:12px;height:12px;border-radius:3px;flex:none}
+.info h3{margin:0;font-size:17px;font-weight:800}
+.info .formal{color:var(--muted);font-size:12px}
+.info p{margin:0}
+.info dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0}
+.info dt{color:var(--muted);font-size:12px;white-space:nowrap}
+.info dd{margin:0}
+.info .note{background:var(--narr-bg);border-radius:6px;padding:6px 8px}
+
+@media (max-width:980px){
+  .grid{grid-template-columns:minmax(0,1fr);height:auto}
+  .stage-panel{height:76vh;min-height:480px}
+  .side{overflow:visible}
+}
+@media (max-width:560px){ .brand h1{font-size:24px} .badge{display:none} }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1><span>細胞</span>工場</h1>
+      <p>細胞の中は、あちこちで部品が働く巨大な工場</p>
+    </div>
+    <div class="controls">
+      <a href="./">コード工場へ</a>
+      <button id="pause" class="primary">❚❚ 一時停止</button>
+      <div class="speed"><label for="speed">はやさ</label><input type="range" id="speed" min="0.25" max="4" step="0.25" value="1"><output id="speedv" for="speed">1x</output></div>
+      <div class="zoom" role="group" aria-label="拡大・縮小"><button id="zin" aria-label="拡大">＋</button><button id="zout" aria-label="縮小">−</button><button id="zfit">全体を見る</button></div>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="panel stage-panel">
+      <div class="ph">
+        <h2>工場の中</h2>
+        <div class="legend" aria-label="色の見方">
+          <span><i style="background:var(--c-info)"></i>設計図</span>
+          <span><i style="background:var(--c-build)"></i>ものづくり</span>
+          <span><i style="background:var(--c-energy)"></i>エネルギー</span>
+          <span><i style="background:var(--c-move)"></i>運ぶ・道</span>
+          <span><i style="background:var(--c-guard)"></i>守る・片づける</span>
+          <span><i style="background:var(--c-small)"></i>小さな粒</span>
+        </div>
+      </div>
+      <div id="narr" class="narr" aria-live="polite"></div>
+      <div class="stage" id="stage">
+        <canvas id="cv" role="img" aria-label="細胞の中の工場。部品をクリックすると、右に説明が出る"></canvas>
+        <div class="badge">この細胞は本当は<b>約0.02mm</b>。<b>1000万倍</b>に拡大すると野球場くらいの工場になる。動きは本当よりずっとゆっくりにしてあるよ。</div>
+      </div>
+      <div class="opts">
+        <label><input type="checkbox" id="follow"> ★の荷物を追いかける</label>
+        <button id="restart" class="link">★を最初から見る</button>
+        <label><input type="checkbox" id="labels" checked> 名前を出す</label>
+        <span>ドラッグで移動、ホイールかピンチで拡大</span>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel">
+        <div class="ph"><h2>物語</h2><span class="hint">★のタンパク質ができて、届くまで</span></div>
+        <ol id="story" class="story"></ol>
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>エネルギー</h2><span class="hint">電池（ATP）の流れ</span></div>
+        <div id="energy" class="energy">
+          <div class="counts"><div><b id="eMade">0</b>作った</div><div><b id="eUsed">0</b>使った</div><div><b id="eNow">0</b>いま浮かぶ</div></div>
+          <p>ブドウ糖を半分に割ると ATP が2個。かけらを発電所（ミトコンドリア）で使うと、もっとたくさんできる。運び屋とポンプは、仕事のたびに1個ずつ使う。絵に描いていないほかの働き手も使うので、電池はしばらくすると空になる。</p>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>しらべる</h2></div>
+        <div id="info" class="info"><p class="empty">工場の中の部品や粒をクリックすると、その仕事がわかるよ。</p></div>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<script>
+'use strict';
+// ===== 部品の説明 =====
+const INFO = {
+  membrane: ['まもりの壁', '細胞膜', 'guard', '細胞の内と外を分ける油の膜。水にとける物はほとんど通さず、門（ポンプ・自動ドア・入口）で出入りを決める。', '厚さ 約5nm', '5cm の壁', '酸素や二酸化炭素のような小さな粒は、膜をすり抜けられる。'],
+  cytosol: ['細胞の海', '細胞質基質', 'small', 'すべての部品が浮かぶ、水っぽい空間。', '細胞の重さの約7割が水', '', '実はぎゅうぎゅうに混んでいる。灰色の粒は、ここで働くほかのたくさんのタンパク質。'],
+  crowd: ['ほかの働き手たち', 'いろいろなタンパク質', 'small', '細胞の中には数十億個のタンパク質があって、それぞれ別の仕事をしている。', '3〜5nm', 'テニスボール（5cm）', 'この絵では、ほんの一部しか描いていない。本当はもっと混んでいる。'],
+  water: ['水の粒', '水', 'small', 'すべての部品がこの中を動く。', '約0.3nm', '3mm の粒', 'たえずでたらめにゆれ動いて、ほかの粒にぶつかっている（ブラウン運動）。'],
+  nucleus: ['設計図の図書館', '核', 'info', 'DNA（設計図）をしまっておく部屋。必要なページだけを写して外へ出す。', '直径 約6µm', '60m のドーム', 'DNA は図書館から出ない。外へ出るのはコピー（mRNA）だけ。'],
+  pore: ['図書館の門', '核膜孔', 'info', '核の出入り口。通っていい物かどうかを調べてから通す。', '約0.1µm', '1m の門', '1つの核に数千個ある。'],
+  dna: ['設計図', 'DNA', 'info', '体の部品（タンパク質）の作り方が全部書いてある。糸巻き（ヒストン）に巻かれてしまわれている。', '太さ 2nm、全部つなぐと長さ 約2m', '2cm のひもが 2万km', '2m もの長さが、直径 0.006mm の核にしまわれている。'],
+  nucleolus: ['リボソームの工場', '核小体', 'build', 'リボソーム（組み立てロボット）の部品を作る。', '約1〜2µm', '10〜20m', ''],
+  polymerase: ['写し係', 'RNAポリメラーゼ', 'info', 'DNA の上をすべりながら、1ページ（遺伝子）を mRNA に写す。', '約15nm', '15cm', '本当は1秒に数十文字ずつ写す。'],
+  mrna: ['設計図のコピー', 'mRNA', 'info', '写した作り方を、核の外の組み立てロボットまで運ぶ。', '太さ 約2nm', '2cm のひも', '本当は1本のコピーから何個もタンパク質が作られ、そのあと分解される。'],
+  ribosome: ['組み立てロボット', 'リボソーム', 'build', 'mRNA を3文字ずつ読んで、合うアミノ酸を順番につなぐ。', '約25nm', 'サッカーボール（25cm）', '1つの細胞に数百万個。本当は1秒に数個ずつつなぐ。'],
+  trna: ['材料の配達係', 'tRNA', 'info', 'アミノ酸を1つ頭にのせて、リボソームに届ける。mRNA の文字に合うものだけが使われる。', '約7nm', '7cm', 'ねらって飛んでくるのではなく、でたらめに動いていて、たまたまぶつかったものが使われる。空になると、またアミノ酸をのせる（このときも ATP を使う）。'],
+  aa: ['タンパク質の材料', 'アミノ酸', 'small', 'つながってタンパク質になるビーズ。20種類ある。', '約1nm', '1cm', '食べ物のタンパク質を分解したものや、細胞の中でリサイクルしたものを使う。'],
+  protein: ['完成品', 'タンパク質', 'build', 'ビーズの鎖が折りたたまれて、決まった形になると仕事ができる。この工場では、細胞の外へ出荷するタンパク質（ホルモンなど）を作っている。', '3〜5nm', 'テニスボール（5cm）', 'ゴルジ体で荷札（糖のかざり）がつく。'],
+  er: ['組み立てライン', '小胞体（粗面小胞体）', 'build', '表面にリボソームがはりつき、できた鎖をすぐ中に受け取って、折りたたみながら流す。', '管や袋が数µm以上広がる', '数十mのライン', '本当は核の膜とつながった、1枚の大きな袋。'],
+  golgi: ['荷づくりセンター', 'ゴルジ体', 'move', 'できたタンパク質に荷札（糖のかざり）をつけ、行き先ごとに運び袋に詰めて送り出す。', '約1〜3µm', '10〜30m', ''],
+  vesicle: ['運び袋', '小胞', 'move', '荷物を包んで運ぶ膜の袋。細胞膜と合体すると、中身が外に出る。', '約0.1µm', '1m の玉', ''],
+  kinesin: ['運び屋', 'キネシン', 'move', '微小管のレールを2本足で歩いて、袋を外向きに運ぶ。1歩ごとに ATP を1個使う。', '約80nm（1歩は8nm）', '80cm（1歩 8cm）', '本当は1秒に約100歩。近くに電池（ATP）がないと止まる。'],
+  dynein: ['内向きの運び屋', 'ダイニン', 'move', 'キネシンと反対に、レールを内向き（中心体のほう）に歩く。外から取りこんだ物をリサイクル工場へ運ぶ。', '約40nm', '40cm', 'これも1歩ごとに ATP を使う。'],
+  rail: ['レール', '微小管', 'move', '運び屋が歩く道。細胞の形を保つ柱にもなる。', '太さ 25nm', '25cm の管', '本当はのびたり縮んだりして、たえず作りかえられている。'],
+  centrosome: ['レールの起点', '中心体', 'move', '微小管（レール）がここから伸びる。細胞が分かれるときにも働く。', '約0.5µm', '5m', ''],
+  mito: ['発電所', 'ミトコンドリア', 'energy', 'ブドウ糖のかけら（燃料）と酸素を使って、ATP（エネルギーの電池）を充電する。', '幅 0.5〜1µm、長さ 1〜数µm', 'バス〜電車1両', 'エネルギーを「生む」のではなく、燃料のエネルギーを電池に詰めかえている。1つの細胞に数百〜数千個。'],
+  synthase: ['回る発電機', 'ATP合成酵素', 'energy', 'ミトコンドリアの膜にささっていて、水車のように回りながら ATP を作る。1回転で3個。', '約10nm', '10cm', '本当は1秒に100回以上回る。'],
+  atp: ['エネルギーの電池', 'ATP', 'energy', '働き手が仕事をするときに使う。使うと ADP（からの電池）になる。運び屋やポンプのほか、絵に描いていないたくさんの働き手も使っている。', '約1nm', '1cm', '人の体は、毎日自分の体重と同じくらいの量の ATP を作り直している。'],
+  adp: ['からの電池', 'ADP', 'energy', 'ATP を使ったあとの形。発電所で、また ATP に充電される。', '約1nm', '1cm', ''],
+  glc: ['燃料', 'ブドウ糖', 'energy', '細胞の外から糖の入口を通って入ってくる。細胞の海で半分に割られ（このとき ATP が2個できる）、かけらが発電所の燃料になる。', '約1nm', '1cm', ''],
+  pyr: ['燃料のかけら', 'ピルビン酸', 'energy', 'ブドウ糖を半分に割ったもの。発電所に入って燃料になる。', '約0.5nm', '5mm', ''],
+  o2: ['燃やすための空気', '酸素', 'small', '発電所で燃料を使うのに必要。膜をすり抜けて入ってくる。', '約0.3nm', '3mm', ''],
+  co2: ['排気ガス', '二酸化炭素', 'small', '発電所で燃料を使うと出る。膜をすり抜けて外へ捨てられる。', '約0.3nm', '3mm', ''],
+  pump: ['くみ出しポンプ', 'ナトリウム・カリウムポンプ', 'guard', 'ATP を1個使うたびに、ナトリウムを3個外へ、カリウムを2個中へ運ぶ。内と外の濃さの差を作って、電気や合図に使う。', '約10nm', '10cm', '細胞が使う ATP のかなりの部分が、このポンプに使われる。'],
+  channel: ['自動ドア', 'イオンチャネル', 'guard', '合図で開いて、決まったイオンだけを通す。', '約10nm', '10cm', ''],
+  glut: ['糖の入口', '糖輸送体（GLUT）', 'guard', 'ブドウ糖だけを通す入口。', '約10nm', '10cm', ''],
+  receptor: ['アンテナ', '受容体', 'guard', '外から届く手紙（ホルモンなど）を受けとって、中に知らせる。', '約10nm', '10cm', ''],
+  horm: ['手紙', 'ホルモン', 'guard', 'ほかの細胞から届く合図。アンテナ（受容体）にぴったりはまると、細胞の仕事が切りかわる。', '約1〜5nm', '1〜5cm', ''],
+  na: ['電気の粒', 'ナトリウムイオン', 'small', 'ポンプで外へくみ出される。内と外の濃さの差が、電気や合図になる。', '約0.2nm', '2mm', ''],
+  k: ['電気の粒', 'カリウムイオン', 'small', 'ポンプで中へ入れられ、自動ドアから外へ出ていく。', '約0.3nm', '3mm', ''],
+  lysosome: ['リサイクル工場', 'リソソーム', 'guard', '外から取りこんだ物や古い部品を分解して、材料（アミノ酸など）に戻す。', '0.1〜1µm', '1〜10m', '中は酸っぱい（酸性）。'],
+  proteasome: ['シュレッダー', 'プロテアソーム', 'guard', '「すててOK」の荷札（ユビキチン）がついたタンパク質を、ほどいて細かく切る。切ったかけらはまた材料になる。', '約45nm', '45cm', ''],
+  old: ['古いタンパク質', 'ユビキチンのついたタンパク質', 'guard', 'こわれたり、いらなくなったりしたタンパク質。赤い荷札（ユビキチン）をつけられて、シュレッダーへ。', '3〜5nm', '5cm', 'これも目的地へ泳ぐのではなく、でたらめに動いてシュレッダーにぶつかる。'],
+  endo: ['取りこみ袋', 'エンドサイトーシスの小胞', 'move', '細胞膜がくぼんで外の物を包み、袋にして中へ取りこむ。', '約0.1µm', '1m', ''],
+};
+
+// ===== 物語（★のタンパク質） =====
+const STEPS = [
+  ['写す', '写し係（RNAポリメラーゼ）が設計図（DNA）の1ページを mRNA に写す'],
+  ['門を出る', 'mRNA が図書館の門（核膜孔）を通って外へ'],
+  ['組み立てる', 'リボソームが mRNA を読み、tRNA が届けたアミノ酸をつなぐ'],
+  ['折りたたむ', '鎖が折りたたまれ、小胞体のラインを流れる'],
+  ['荷づくり', '運び袋でゴルジ体へ。荷札をつけて袋に詰める'],
+  ['運ぶ', 'キネシンが ATP を1個ずつ使ってレールを歩く'],
+  ['出荷', '袋が細胞膜と合体して、タンパク質が外へ'],
+];
+const STAGE_STEP = {tx: 0, wait: 1, export: 1, tl: 2, fold: 3, line: 3, bud: 4, toGolgi: 4, golgi: 4, bud2: 4, toRail: 5, walk: 5, fuse: 6, out: 6};
+
+// ===== 配置（ワールド座標。細胞 = 2400×1500） =====
+const W = 2400, H = 1500;
+const CELL = {l: 80, t: 80, r: 2320, b: 1420, rad: 260};
+const N = {x: 640, y: 700, r: 270};
+const NUCLEOLUS = {x: 590, y: 800, r: 62};
+const GENE = {x1: 500, x2: 790, y: 580};
+const TUBES = [560, 700, 840].map(y => ({y, x1: 990, x2: 1420, h: 18}));
+const DOCKS = TUBES.map((tube, i) => ({x: 1060, y: tube.y - tube.h - 13, tube, pore: [-30, 0, 30][i] * Math.PI / 180, job: null}));
+const GOLGI = {x1: 1490, x2: 1650, y: 700, plates: [1500, 1532, 1564, 1596, 1628], hh: [150, 140, 128, 116, 104]};
+const C = {x: 1600, y: 430};
+const BOX = {x1: 900, x2: 1480, y1: 440, y2: 980};
+function mkRail(x2, y2, use) {
+  const dx = x2 - C.x, dy = y2 - C.y, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+  let nx = uy, ny = -ux; if (ny > 0) { nx = -nx; ny = -ny; }
+  return {x1: C.x, y1: C.y, x2, y2, len, ux, uy, nx, ny, use};
+}
+const RAILS = [mkRail(2290, 250, 'out'), mkRail(2320, 700, 'out'), mkRail(2190, 1360, 'out'), mkRail(1180, 80, 'in'), mkRail(330, 300, ''), mkRail(1900, 1410, '')];
+const MITOS = [[1950, 470, 150, 15], [2080, 920, 170, -20], [1700, 1190, 160, 30], [1150, 1190, 170, -8], [420, 1180, 150, 40], [250, 560, 140, 80], [1000, 300, 140, 0]]
+  .map(([x, y, len, a]) => ({x, y, len, ang: a * Math.PI / 180, w: 64, fuel: 6, prod: Math.random(), spin: 0}));
+const L = {x: 1330, y: 300, r: 44, flash: 0};
+const P = {x: 930, y: 1090, busy: 0, spin: 0, t: 3};
+const PUMP = {x: 1000, y: CELL.b, t: 1, flash: 0, atp: null};
+const CHAN = {x: 1500, y: CELL.b, t: 3, open: 0, emit: 0};
+const RECEP = {x: 1800, y: CELL.t, t: 4, blink: 0};
+const GLUTS = [{x: CELL.l, y: 820, nx: 1, ny: 0}, {x: 620, y: CELL.b, nx: 0, ny: -1}, {x: 700, y: CELL.t, nx: 0, ny: 1}].map(g => ({...g, t: Math.random() * 3}));
+const POL = {busy: null, cool: 0};
+const AA_COLORS = ['#F2C230', '#E8833A', '#4FB0A5', '#D96BA0', '#8BC34A'];
+
+// ===== 小さな道具 =====
+const $ = s => document.querySelector(s);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const ease = t => t < .5 ? 2 * t * t : 1 - 2 * (1 - t) ** 2;
+const rnd = (a, b) => a + Math.random() * (b - a);
+const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) * 2;
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function inCell(x, y, pad = 0) {
+  const l = CELL.l + pad, t = CELL.t + pad, r = CELL.r - pad, b = CELL.b - pad, rad = CELL.rad - pad;
+  if (x < l || x > r || y < t || y > b) return false;
+  const cx = x < l + rad ? l + rad : x > r - rad ? r - rad : x;
+  const cy = y < t + rad ? t + rad : y > b - rad ? b - rad : y;
+  return (x - cx) ** 2 + (y - cy) ** 2 <= rad * rad;
+}
+function allowed(x, y, region) {
+  if (region === 'out') return !inCell(x, y, -12) && x > -200 && x < W + 200 && y > -200 && y < H + 200;
+  if (!inCell(x, y, 14)) return false;
+  return Math.hypot(x - N.x, y - N.y) > N.r + 10;
+}
+// でたらめな動き（ブラウン運動を、なめらかにしたもの）
+function wander(p, dt, sp, region) {
+  const k = Math.exp(-2.5 * dt), q = sp * Math.sqrt(1 - k * k);
+  p.vx = p.vx * k + q * gauss(); p.vy = p.vy * k + q * gauss();
+  if (region === 'box') {
+    if (p.x < BOX.x1) p.vx += 60 * dt; if (p.x > BOX.x2) p.vx -= 60 * dt;
+    if (p.y < BOX.y1) p.vy += 60 * dt; if (p.y > BOX.y2) p.vy -= 60 * dt;
+  }
+  const nx = p.x + p.vx * dt, ny = p.y + p.vy * dt;
+  if (!allowed(nx, ny, region)) { p.vx = -p.vx; p.vy = -p.vy; return; }
+  p.x = nx; p.y = ny;
+}
+function hopTo(o, to, dur, done) { o.hop = {sx: o.x, sy: o.y, to: typeof to === 'function' ? to : () => to, t: 0, dur, done}; }
+function hopStep(o, dt) {
+  const h = o.hop; if (!h) return false;
+  h.t += dt / h.dur; const g = h.to(), e = ease(Math.min(1, h.t));
+  o.x = h.sx + (g.x - h.sx) * e; o.y = h.sy + (g.y - h.sy) * e;
+  if (h.t >= 1) { o.hop = null; if (h.done) h.done(o); }
+  return true;
+}
+function pathPos(pts, d) {
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1], len = Math.hypot(b.x - a.x, b.y - a.y);
+    if (d <= len) return {x: a.x + (b.x - a.x) * d / len, y: a.y + (b.y - a.y) * d / len, done: false};
+    d -= len;
+  }
+  const e = pts[pts.length - 1]; return {x: e.x, y: e.y, done: true};
+}
+const railPt = (r, s) => ({x: r.x1 + r.ux * s, y: r.y1 + r.uy * s});
+const proj = (r, x, y) => (x - r.x1) * r.ux + (y - r.y1) * r.uy;
+const poreXY = (a, r) => ({x: N.x + Math.cos(a) * r, y: N.y + Math.sin(a) * r});
+function mitoLocal(m, x, y) { const c = Math.cos(m.ang), s = Math.sin(m.ang), dx = x - m.x, dy = y - m.y; return [dx * c + dy * s, -dx * s + dy * c]; }
+function mitoDist(m, x, y) { const [u, v] = mitoLocal(m, x, y), h = m.len / 2 - m.w / 2; return Math.hypot(u - clamp(u, -h, h), v) - m.w / 2; }
+function mitoSurf(m) {
+  const h = m.len / 2 - m.w / 2, u = rnd(-h, h), side = Math.random() < .5 ? -1 : 1, v = side * (m.w / 2 + 6);
+  const c = Math.cos(m.ang), s = Math.sin(m.ang);
+  return {x: m.x + u * c - v * s, y: m.y + u * s + v * c, nx: -side * s, ny: side * c};
+}
+function wallPoint() {
+  const r = Math.random() * 5080;
+  if (r < 1720) return {x: 340 + r, y: CELL.t, nx: 0, ny: 1};
+  if (r < 3440) return {x: 340 + r - 1720, y: CELL.b, nx: 0, ny: -1};
+  if (r < 4260) return {x: CELL.l, y: 340 + r - 3440, nx: 1, ny: 0};
+  return {x: CELL.r, y: 340 + r - 4260, nx: -1, ny: 0};
+}
+
+// ===== 動くもの =====
+const ST = {made: 0, used: 0};
+let T = 0, jobs = [], nextId = 1, focusId = 1;
+const smalls = [], trnas = [], crowd = [], water = [], motors = [], endos = [];
+let o2T = 0, endoT = 6, aaT = 0;
+function add(type, x, y, o = {}) { const p = {type, x, y, vx: 0, vy: 0, age: 0, life: Infinity, region: 'cell', ...o}; if (type === 'atp') p.use = rnd(30, 60); smalls.push(p); return p; }
+const SPEED = {atp: 50, adp: 50, glc: 45, pyr: 50, o2: 60, co2: 60, aa: 45, na: 50, k: 50, old: 26, horm: 20};
+
+function randInCell(test) { for (let i = 0; i < 200; i++) { const x = rnd(CELL.l, CELL.r), y = rnd(CELL.t, CELL.b); if (test(x, y)) return {x, y}; } return {x: 1600, y: 1000}; }
+function init() {
+  const inside = (x, y) => allowed(x, y, 'cell');
+  for (let i = 0; i < 1800; i++) { const q = randInCell((x, y) => inCell(x, y, 16)); water.push({bx: q.x, by: q.y, ox: 0, oy: 0}); }
+  for (let i = 0; i < 170; i++) { const q = randInCell(inside); crowd.push({x: q.x, y: q.y, vx: 0, vy: 0, r: rnd(6, 10), sh: Math.random() * 6}); }
+  const inBox = (x, y) => inside(x, y) && x > BOX.x1 && x < BOX.x2 && y > BOX.y1 && y < BOX.y2;
+  for (let i = 0; i < 55; i++) { const q = randInCell(inBox); add('aa', q.x, q.y, {region: 'box', color: AA_COLORS[i % 5]}); }
+  for (let i = 0; i < 30; i++) { const q = randInCell(inBox); trnas.push({x: q.x, y: q.y, vx: 0, vy: 0, rot: rnd(0, 6), vr: 0, loaded: i < 16, color: AA_COLORS[i % 5]}); }
+  for (const m of MITOS) for (let i = 0; i < 8; i++) { const q = mitoSurf(m); add('atp', q.x, q.y); }
+}
+
+function grabATP(x, y, R, target, cb) {
+  let best = null, bd = R * R;
+  for (const p of smalls) {
+    if (p.type !== 'atp' || p.dead || p.hop) continue;
+    const d = (p.x - x) ** 2 + (p.y - y) ** 2; if (d < bd) { bd = d; best = p; }
+  }
+  if (!best) return null;
+  hopTo(best, target, Math.max(.12, Math.sqrt(bd) / 900), p => {
+    p.type = 'adp'; p.age = 0; p.life = 14; p.vx = rnd(-60, 60); p.vy = rnd(-60, 60); ST.used++; cb();
+  });
+  return best;
+}
+function grabTRNA(d, j) {
+  let best = null, bd = 240 * 240;
+  for (const t of trnas) { if (!t.loaded || t.hop) continue; const q = (t.x - d.x) ** 2 + (t.y - d.y) ** 2; if (q < bd) { bd = q; best = t; } }
+  if (!best) return false;
+  hopTo(best, {x: d.x + 4, y: d.y - 16}, Math.max(.25, Math.sqrt(bd) / 700), t => {
+    j.beads.push(t.color); t.loaded = false; t.vx = rnd(-120, 120); t.vy = rnd(-140, -60); j.want = false; j.next = .3; j.starve = 0;
+  });
+  return true;
+}
+
+// 運び屋（キネシン・ダイニン）: ATP を1個使うと1歩すすむ
+function mkMotor(type, rail, s0, target, cargo, onArrive) {
+  const dir = target > s0 ? 1 : -1;
+  return {type, rail, fa: s0 - 4 * dir, fb: s0 + 4 * dir, dir, target, step: null, atp: null, wait: 0, cargo, onArrive};
+}
+function motorFeet(m) {
+  let a = m.fa, b = m.fb, lift = 0, foot = null;
+  if (m.step) { const e = ease(Math.min(1, m.step.t)); const v = m.step.from + (m.step.to - m.step.from) * e; lift = Math.sin(Math.PI * e) * 10; foot = m.step.foot; if (foot === 'fa') a = v; else b = v; }
+  return {a, b, lift, foot};
+}
+function motorJoint(m) { const f = motorFeet(m), c = railPt(m.rail, (f.a + f.b) / 2); return {x: c.x + m.rail.nx * 16, y: c.y + m.rail.ny * 16}; }
+function cargoPos(m) { const j = motorJoint(m); return {x: j.x + m.rail.nx * 22, y: j.y + m.rail.ny * 22}; }
+function updMotor(m, dt) {
+  if (m.step) { m.step.t += dt / m.step.dur; if (m.step.t >= 1) { m[m.step.foot] = m.step.to; m.step = null; } return; }
+  const s = (m.fa + m.fb) / 2;
+  if (m.dir > 0 ? s >= m.target : s <= m.target) { m.dead = true; m.onArrive(m); return; }
+  if (m.atp) return;
+  const j = motorJoint(m);
+  const a = grabATP(j.x, j.y, 420, () => motorJoint(m), () => {
+    m.atp = null; m.wait = 0;
+    const back = m.dir > 0 ? (m.fa < m.fb ? 'fa' : 'fb') : (m.fa > m.fb ? 'fa' : 'fb');
+    const front = back === 'fa' ? m.fb : m.fa;
+    m.step = {foot: back, from: m[back], to: front + m.dir * 22, t: 0, dur: .2};
+  });
+  if (a) m.atp = a; else m.wait += dt;
+}
+
+// ★の物語: 1つのタンパク質ができて、出荷されるまで
+function go(j, st) { j.stage = st; j.t = 0; }
+function exportPath(d) { return [{x: GENE.x2, y: GENE.y}, poreXY(d.pore, N.r - 26), poreXY(d.pore, N.r + 16), {x: 990, y: d.y}, {x: d.x - 24, y: d.y}]; }
+function updJobs(dt) {
+  if (!POL.busy) {
+    POL.cool -= dt;
+    if (POL.cool <= 0 && jobs.filter(j => j.stage !== 'out').length < 7) { const j = {id: nextId++, stage: 'tx', t: 0, p: 0, x: GENE.x1, y: GENE.y}; jobs.push(j); POL.busy = j; }
+  }
+  for (const j of jobs) {
+    j.t += dt;
+    switch (j.stage) {
+      case 'tx': j.p = Math.min(1, j.t / 6); j.x = GENE.x1 + (GENE.x2 - GENE.x1) * j.p; j.y = GENE.y; if (j.p >= 1) { POL.busy = null; POL.cool = 2; go(j, 'wait'); } break;
+      case 'wait': { j.x = GENE.x2; j.y = GENE.y + 16; const d = DOCKS.find(d => !d.job); if (d) { d.job = j; j.dock = d; j.path = exportPath(d); j.pd = 0; go(j, 'export'); } break; }
+      case 'export': { j.pd += 95 * dt; const q = pathPos(j.path, j.pd); j.x = q.x; j.y = q.y; if (q.done) { j.beads = []; j.next = .2; j.want = false; j.starve = 0; go(j, 'tl'); } break; }
+      case 'tl': {
+        const d = j.dock; j.x = d.x; j.y = d.y;
+        if (j.beads.length >= 10) { d.job = null; go(j, 'fold'); break; }
+        if (!j.want) { j.next -= dt; if (j.next <= 0) { if (grabTRNA(d, j)) j.want = true; else j.starve += dt; } }
+        break;
+      }
+      case 'fold': j.x = j.dock.x + 40; j.y = j.dock.tube.y; if (j.t > 1.4) go(j, 'line'); break;
+      case 'line': j.x += 70 * dt; if (j.x >= j.dock.tube.x2 - 24) { j.x = j.dock.tube.x2 - 24; go(j, 'bud'); } break;
+      case 'bud': if (j.t > .8) { j.gy = GOLGI.y + (j.dock.tube.y - GOLGI.y) * .45; hopTo(j, {x: GOLGI.x1 - 4, y: j.gy}, 1.3, () => go(j, 'golgi')); go(j, 'toGolgi'); } break;
+      case 'toGolgi': case 'toRail': hopStep(j, dt); break;
+      case 'golgi': j.x = GOLGI.x1 - 4 + (GOLGI.x2 + 18 - GOLGI.x1) * Math.min(1, j.t / 6); j.y = j.gy; if (j.t >= 6) go(j, 'bud2'); break;
+      case 'bud2': if (j.t > .7) {
+        const outs = RAILS.filter(r => r.use === 'out'), r = outs[j.id % outs.length], s0 = clamp(proj(r, j.x, j.y), 40, r.len - 60), q = railPt(r, s0);
+        hopTo(j, {x: q.x + r.nx * 38, y: q.y + r.ny * 38}, 1, () => {
+          j.motor = mkMotor('kin', r, s0, r.len - 18, {job: j}, () => { const e = railPt(r, r.len); j.x = e.x; j.y = e.y; j.ux = r.ux; j.uy = r.uy; go(j, 'fuse'); });
+          motors.push(j.motor); go(j, 'walk');
+        });
+        go(j, 'toRail');
+      } break;
+      case 'walk': { const c = cargoPos(j.motor); j.x = c.x; j.y = c.y; break; }
+      case 'fuse': if (j.t > 1.3) go(j, 'out'); break;
+      case 'out': j.x += j.ux * 30 * dt; j.y += j.uy * 30 * dt; if (j.t > 5) j.dead = true; break;
+    }
+  }
+  jobs = jobs.filter(j => !j.dead);
+}
+
+function update(dt) {
+  T += dt;
+  updJobs(dt);
+  for (const m of motors) updMotor(m, dt);
+  for (let i = motors.length - 1; i >= 0; i--) if (motors[i].dead) motors.splice(i, 1);
+
+  // 発電所: 燃料があれば ATP を充電して送り出す
+  // まわりに電池がたまっていると、作るのをひかえる
+  for (const m of MITOS) {
+    m.fuel = Math.min(12, m.fuel + 1.6 * dt); // 絵に出していない燃料のたくわえ
+    let near = 0; for (const p of smalls) if (p.type === 'atp' && Math.abs(p.x - m.x) < 260 && Math.abs(p.y - m.y) < 260) near++;
+    const working = m.fuel >= 1 && near < 16;
+    m.spin += dt * (working ? 7 : 1.2);
+    if (working) { m.prod -= dt; if (m.prod <= 0) { m.prod = rnd(.3, .5); m.fuel -= 1; const q = mitoSurf(m); add('atp', q.x, q.y, {vx: q.nx * 60, vy: q.ny * 60}); ST.made++; } }
+  }
+
+  // 細胞膜の門
+  PUMP.flash = Math.max(0, PUMP.flash - dt); PUMP.t -= dt;
+  if (PUMP.t <= 0 && !PUMP.atp) {
+    PUMP.atp = grabATP(PUMP.x, PUMP.y - 16, 360, () => ({x: PUMP.x, y: PUMP.y - 16}), () => {
+      PUMP.atp = null; PUMP.flash = .6; PUMP.t = 2.6;
+      for (let i = 0; i < 3; i++) add('na', PUMP.x + rnd(-10, 10), PUMP.y + 20, {region: 'out', life: 3.5, vy: 70, vx: rnd(-30, 30)});
+      for (let i = 0; i < 2; i++) add('k', PUMP.x + rnd(-10, 10), PUMP.y - 26, {life: 3.5, vy: -70, vx: rnd(-30, 30)});
+    });
+    if (!PUMP.atp) PUMP.t = .5;
+  }
+  CHAN.t -= dt;
+  if (CHAN.t <= 0) { CHAN.open = 1.6; CHAN.t = rnd(5, 7); }
+  if (CHAN.open > 0) {
+    CHAN.open -= dt; CHAN.emit -= dt;
+    if (CHAN.emit <= 0) { CHAN.emit = .35; const k = add('k', CHAN.x, CHAN.y - 22, {life: 3}); hopTo(k, {x: CHAN.x, y: CHAN.y + 22}, .4, p => { p.region = 'out'; p.age = 0; p.vy = 60; }); }
+  }
+  RECEP.blink = Math.max(0, RECEP.blink - dt); RECEP.t -= dt;
+  if (RECEP.t <= 0) { RECEP.t = 11; const h = add('horm', RECEP.x + 170, RECEP.y - 130, {region: 'out'}); hopTo(h, {x: RECEP.x, y: RECEP.y - 34}, 2.4, p => { RECEP.blink = 1.4; p.dead = true; }); }
+  for (const g of GLUTS) {
+    g.t -= dt;
+    if (g.t <= 0) { g.t = rnd(2.4, 3.4); const p = add('glc', g.x - g.nx * 46, g.y - g.ny * 46, {split: Infinity}); hopTo(p, {x: g.x + g.nx * 32, y: g.y + g.ny * 32}, 1, q => { q.age = 0; q.split = rnd(3, 6); }); }
+  }
+  o2T -= dt;
+  if (o2T <= 0) { o2T = .45; const w = wallPoint(), o = add('o2', w.x - w.nx * 30, w.y - w.ny * 30, {life: 12}); hopTo(o, {x: w.x + w.nx * 26, y: w.y + w.ny * 26}, .7, p => { p.age = 0; }); }
+
+  // シュレッダーとリサイクル工場
+  P.t -= dt;
+  if (P.t <= 0) { P.t = rnd(9, 13); const a = rnd(0, Math.PI * 2), r = rnd(100, 160); const x = P.x + Math.cos(a) * r, y = P.y + Math.sin(a) * r; if (allowed(x, y, 'cell')) add('old', x, y, {life: 40}); }
+  if (P.busy > 0) { P.busy -= dt; P.spin += dt * 6; if (P.busy <= 0) for (let i = 0; i < 4; i++) add('aa', P.x + rnd(-6, 6), P.y - 30, {region: 'box', color: AA_COLORS[i], vx: rnd(-50, 50), vy: rnd(-90, -40)}); }
+  L.flash = Math.max(0, L.flash - dt);
+  endoT -= dt;
+  if (endoT <= 0 && endos.length < 2) { endoT = 15; endos.push({stage: 'pit', t: 0}); }
+  for (const e of endos) {
+    e.t += dt;
+    if (e.stage === 'pit' && e.t > 1.4) {
+      const r = RAILS[3], sL = proj(r, L.x, L.y);
+      e.stage = 'walk';
+      e.motor = mkMotor('dyn', r, r.len - 22, sL, {endo: e}, m => {
+        const c = cargoPos(m); e.x = c.x; e.y = c.y; e.stage = 'toL';
+        hopTo(e, {x: L.x, y: L.y}, .8, () => { L.flash = 1.3; e.stage = 'digest'; e.t = 0; });
+      });
+      motors.push(e.motor);
+    } else if (e.stage === 'toL') hopStep(e, dt);
+    else if (e.stage === 'digest' && e.t > 1.3) {
+      e.dead = true;
+      for (let i = 0; i < 3; i++) add('aa', L.x + rnd(-10, 10), L.y + 30, {region: 'box', color: AA_COLORS[(i + 2) % 5], vx: rnd(-40, 40), vy: rnd(40, 90)});
+    }
+  }
+  for (let i = endos.length - 1; i >= 0; i--) if (endos[i].dead) endos.splice(i, 1);
+
+  // 小さな粒
+  let nAA = 0;
+  for (const p of smalls) {
+    if (p.dead) continue;
+    if (p.type === 'aa') nAA++;
+    if (hopStep(p, dt)) continue;
+    p.age += dt;
+    if (p.age > p.life) { p.dead = true; continue; }
+    wander(p, dt, SPEED[p.type] || 40, p.region);
+    if (p.type === 'atp' && p.age > p.use) { // 絵に描いていないほかの働き手も、電池を使う
+      p.type = 'adp'; p.age = 0; p.life = 14; ST.used++;
+    } else if (p.type === 'glc' && p.age > p.split) {
+      p.dead = true;
+      for (let i = 0; i < 2; i++) add('pyr', p.x + rnd(-6, 6), p.y + rnd(-6, 6), {life: 25, vx: rnd(-60, 60), vy: rnd(-60, 60)});
+      for (let i = 0; i < 2; i++) add('atp', p.x + rnd(-6, 6), p.y + rnd(-6, 6), {vx: rnd(-60, 60), vy: rnd(-60, 60)});
+      ST.made += 2;
+    } else if (p.type === 'pyr' || p.type === 'adp' || p.type === 'o2') {
+      for (const m of MITOS) if (mitoDist(m, p.x, p.y) < 14) {
+        p.dead = true;
+        if (p.type === 'pyr') { m.fuel += 5; const q = mitoSurf(m); add('co2', q.x, q.y, {life: 6, vx: q.nx * 50, vy: q.ny * 50}); }
+        break;
+      }
+    } else if (p.type === 'old' && P.busy <= 0 && Math.hypot(p.x - P.x, p.y - P.y) < 40) {
+      P.busy = 1.8; hopTo(p, {x: P.x, y: P.y}, .6, q => { q.dead = true; });
+    }
+  }
+  aaT -= dt;
+  if (nAA < 50 && aaT <= 0) { aaT = .25; const q = randInCell((x, y) => allowed(x, y, 'cell') && x > BOX.x1 && x < BOX.x2 && y > BOX.y1 && y < BOX.y2); add('aa', q.x, q.y, {region: 'box', color: AA_COLORS[(Math.random() * 5) | 0]}); }
+  for (let i = smalls.length - 1; i >= 0; i--) if (smalls[i].dead) smalls.splice(i, 1);
+
+  for (const t of trnas) {
+    if (hopStep(t, dt)) continue;
+    wander(t, dt, 55, 'box');
+    t.vr = t.vr * .95 + gauss() * .3; t.rot += t.vr * dt;
+    if (!t.loaded) for (const a of smalls) if (a.type === 'aa' && !a.dead && !a.hop && Math.abs(a.x - t.x) < 32 && Math.abs(a.y - t.y) < 32) { a.dead = true; t.loaded = true; t.color = a.color; break; }
+  }
+  for (const c of crowd) wander(c, dt, 10, 'cell');
+  for (const w of water) { w.ox = clamp(w.ox * .85 + gauss() * 1.2, -6, 6); w.oy = clamp(w.oy * .85 + gauss() * 1.2, -6, 6); }
+}
+
+// ===== 色 =====
+const COL = {};
+function readColors() {
+  const cs = getComputedStyle(document.documentElement), g = n => cs.getPropertyValue('--' + n).trim();
+  Object.assign(COL, {ink: g('ink'), muted: g('muted'), panel: g('panel'), line: g('line'), machine: g('machine'), floor: g('floor'), grid: g('grid'), outside: g('outside'), water: g('water'),
+    info: g('c-info'), build: g('c-build'), energy: g('c-energy'), move: g('c-move'), guard: g('c-guard'), small: g('c-small'), robot: g('robot'), focus: g('focus')});
+}
+function al(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; }
+
+// ===== 描く =====
+const cv = $('#cv'), ctx = cv.getContext('2d'), stageEl = $('#stage');
+let dpr = 1, vw = 800, vh = 600;
+const cam = {x: 0, y: 0, s: .4, fit: true, zoomTo: null};
+const DNA_PATH = (() => {
+  const rng = mulberry(7), pts = []; let x = N.x - 150, y = N.y + 60, h = 0;
+  for (let i = 0; i < 520; i++) {
+    h += (rng() - .5) * .7;
+    const nx = x + Math.cos(h) * 6, ny = y + Math.sin(h) * 6;
+    if (Math.hypot(nx - N.x, ny - N.y) > N.r - 40 || (ny > GENE.y - 26 && ny < GENE.y + 22)) h += Math.PI * .5 + rng();
+    else { x = nx; y = ny; }
+    pts.push({x, y});
+  }
+  return pts;
+})();
+
+function cellPath(i) { ctx.beginPath(); ctx.roundRect(CELL.l + i, CELL.t + i, CELL.r - CELL.l - 2 * i, CELL.b - CELL.t - 2 * i, CELL.rad - i); }
+function circle(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); }
+
+function drawFloor() {
+  ctx.fillStyle = COL.muted; ctx.font = '700 30px "M PLUS Rounded 1c", sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('細胞の外', CELL.l + 40, CELL.t - 30);
+  ctx.save(); cellPath(0); ctx.fillStyle = COL.floor; ctx.fill(); ctx.clip();
+  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1.5; ctx.beginPath();
+  for (let x = CELL.l; x <= CELL.r; x += 80) { ctx.moveTo(x, CELL.t); ctx.lineTo(x, CELL.b); }
+  for (let y = CELL.t; y <= CELL.b; y += 80) { ctx.moveTo(CELL.l, y); ctx.lineTo(CELL.r, y); }
+  ctx.stroke(); ctx.restore();
+}
+function drawWater(v) {
+  if (cam.s < .3) return;
+  ctx.fillStyle = al(COL.water, .4);
+  for (const w of water) { const x = w.bx + w.ox, y = w.by + w.oy; if (x < v.x1 || x > v.x2 || y < v.y1 || y > v.y2) continue; ctx.fillRect(x - 1.5, y - 1.5, 3, 3); }
+}
+function drawCrowd() {
+  ctx.fillStyle = al(COL.small, .28); ctx.strokeStyle = al(COL.small, .45); ctx.lineWidth = 1.5;
+  for (const c of crowd) { ctx.beginPath(); ctx.ellipse(c.x, c.y, c.r, c.r * .75, c.sh, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+}
+function drawRails() {
+  for (const r of RAILS) {
+    ctx.strokeStyle = al(COL.move, .22); ctx.lineWidth = 10; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(r.x1, r.y1); ctx.lineTo(r.x2, r.y2); ctx.stroke();
+    ctx.strokeStyle = al(COL.move, .5); ctx.lineWidth = 2; ctx.beginPath();
+    for (let s = 24; s < r.len; s += 18) { const q = railPt(r, s); ctx.moveTo(q.x - r.nx * 8, q.y - r.ny * 8); ctx.lineTo(q.x + r.nx * 8, q.y + r.ny * 8); }
+    ctx.stroke();
+  }
+  ctx.save(); ctx.translate(C.x, C.y);
+  ctx.fillStyle = al(COL.move, .18); circle(0, 0, 30); ctx.fill();
+  ctx.fillStyle = COL.machine; ctx.strokeStyle = COL.move; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.roundRect(-16, -6, 22, 12, 3); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.roundRect(4, -14, 12, 22, 3); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+function drawER() {
+  for (const tb of TUBES) {
+    ctx.beginPath(); ctx.roundRect(tb.x1, tb.y - tb.h, tb.x2 - tb.x1, tb.h * 2, tb.h);
+    ctx.fillStyle = al(COL.build, .16); ctx.fill(); ctx.strokeStyle = COL.build; ctx.lineWidth = 3; ctx.stroke();
+    ctx.save(); ctx.setLineDash([10, 10]); ctx.lineDashOffset = -T * 70; ctx.strokeStyle = al(COL.build, .45); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(tb.x1 + 14, tb.y); ctx.lineTo(tb.x2 - 14, tb.y); ctx.stroke(); ctx.restore();
+    ctx.fillStyle = al(COL.build, .7);
+    for (let x = tb.x1 + 20; x < tb.x2 - 10; x += 30) {
+      if (Math.abs(x - DOCKS[0].x) > 26) { circle(x, tb.y - tb.h - 5, 5); ctx.fill(); }
+      circle(x + 15, tb.y + tb.h + 5, 5); ctx.fill();
+    }
+  }
+}
+function drawGolgi() {
+  GOLGI.plates.forEach((x, i) => {
+    const hh = GOLGI.hh[i], y = GOLGI.y;
+    ctx.beginPath(); ctx.moveTo(x, y - hh); ctx.quadraticCurveTo(x + 24, y, x, y + hh);
+    ctx.lineCap = 'round'; ctx.strokeStyle = COL.move; ctx.lineWidth = 16; ctx.stroke();
+    ctx.strokeStyle = COL.floor; ctx.lineWidth = 10; ctx.stroke();
+    ctx.strokeStyle = al(COL.move, .2); ctx.stroke();
+    ctx.fillStyle = al(COL.move, .55); circle(x + 4, y - hh - 14, 5); ctx.fill(); circle(x + 4, y + hh + 14, 5); ctx.fill();
+  });
+}
+function drawNucleus() {
+  circle(N.x, N.y, N.r); ctx.fillStyle = al(COL.info, .1); ctx.fill();
+  ctx.strokeStyle = COL.info; ctx.lineWidth = 3; ctx.stroke(); circle(N.x, N.y, N.r - 9); ctx.stroke();
+  circle(NUCLEOLUS.x, NUCLEOLUS.y, NUCLEOLUS.r); ctx.fillStyle = al(COL.build, .18); ctx.fill(); ctx.strokeStyle = al(COL.build, .5); ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = al(COL.info, .4); ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); DNA_PATH.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+  ctx.fillStyle = al(COL.info, .5);
+  for (let i = 0; i < DNA_PATH.length; i += 13) { circle(DNA_PATH[i].x, DNA_PATH[i].y, 5); ctx.fill(); }
+  // 写している遺伝子（二重らせん）
+  ctx.lineWidth = 2.5;
+  for (const ph of [0, Math.PI]) {
+    ctx.strokeStyle = ph ? al(COL.info, .6) : COL.info; ctx.beginPath();
+    for (let x = GENE.x1 - 40; x <= GENE.x2 + 40; x += 3) { const y = GENE.y + Math.sin(x / 9 + ph) * 7; x === GENE.x1 - 40 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+    ctx.stroke();
+  }
+  // 門
+  for (let i = 0; i < 12; i++) {
+    const a = i * Math.PI / 6; ctx.save(); ctx.translate(N.x + Math.cos(a) * (N.r - 4.5), N.y + Math.sin(a) * (N.r - 4.5)); ctx.rotate(a);
+    ctx.fillStyle = COL.machine; ctx.strokeStyle = COL.info; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(-10, -9, 20, 18, 4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = al(COL.info, .5); ctx.fillRect(-10, -2.5, 20, 5); ctx.restore();
+  }
+  // 写し係
+  const px = POL.busy ? POL.busy.x : GENE.x1 - 10, y = GENE.y + Math.sin(T * 10) * (POL.busy ? 1.2 : 0);
+  if (POL.busy) drawTail(px, y, POL.busy.p);
+  ctx.fillStyle = COL.machine; ctx.strokeStyle = COL.info; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.ellipse(px, y, 20, 14, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = COL.info; ctx.beginPath(); ctx.ellipse(px, y, 9, 6, 0, 0, Math.PI * 2); ctx.fill();
+}
+function drawTail(x, y, p) {
+  const len = 20 + p * 80; ctx.strokeStyle = COL.info; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath();
+  for (let d = 0; d <= len; d += 3) { const px = x - d * .55, py = y - 14 - d * .5 + Math.sin(d / 6 + T * 3) * 4; d ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+  ctx.stroke();
+}
+function drawTape(x, y, len, a = 1) {
+  ctx.globalAlpha = a; ctx.strokeStyle = COL.info; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath();
+  for (let d = -len / 2; d <= len / 2; d += 2) { const py = y + Math.sin(d / 5 + T * 4) * 3; d === -len / 2 ? ctx.moveTo(x + d, py) : ctx.lineTo(x + d, py); }
+  ctx.stroke();
+  ctx.fillStyle = COL.info; for (let d = -len / 2 + 3; d < len / 2; d += 8) ctx.fillRect(x + d - 1, y - 7, 2, 4);
+  ctx.globalAlpha = 1;
+}
+function drawMito(m) {
+  ctx.save(); ctx.translate(m.x, m.y); ctx.rotate(m.ang);
+  const h = m.w / 2;
+  ctx.beginPath(); ctx.roundRect(-m.len / 2, -h, m.len, m.w, h); ctx.fillStyle = al(COL.energy, .14); ctx.fill(); ctx.strokeStyle = COL.energy; ctx.lineWidth = 3; ctx.stroke();
+  ctx.beginPath(); ctx.roundRect(-m.len / 2 + 7, -h + 7, m.len - 14, m.w - 14, h - 7); ctx.strokeStyle = al(COL.energy, .55); ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.strokeStyle = al(COL.energy, .45); ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath();
+  let i = 0;
+  for (let x = -m.len / 2 + 24; x < m.len / 2 - 20; x += 17, i++) { if (Math.abs(x) < 18) continue; const top = i % 2; ctx.moveTo(x, top ? -h + 8 : h - 8); ctx.lineTo(x, top ? 6 : -6); }
+  ctx.stroke();
+  ctx.fillStyle = COL.machine; ctx.strokeStyle = COL.energy; ctx.lineWidth = 2.5; circle(0, 0, 13); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = COL.energy;
+  for (let k = 0; k < 3; k++) { const a = m.spin + k * Math.PI * 2 / 3; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 10, a, a + .7); ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+function drawLyso() {
+  circle(L.x, L.y, L.r); ctx.fillStyle = al(COL.guard, L.flash > 0 ? .35 + .15 * Math.sin(T * 20) : .14); ctx.fill(); ctx.strokeStyle = COL.guard; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = al(COL.guard, .5); for (let k = 0; k < 5; k++) { const a = k * 1.3 + T * .4; circle(L.x + Math.cos(a) * 20, L.y + Math.sin(a) * 18, 4); ctx.fill(); }
+}
+function drawProteasome() {
+  ctx.save(); ctx.translate(P.x, P.y);
+  ctx.beginPath(); ctx.roundRect(-18, -30, 36, 60, 10); ctx.fillStyle = al(COL.guard, P.busy > 0 ? .3 : .14); ctx.fill(); ctx.strokeStyle = COL.guard; ctx.lineWidth = 3; ctx.stroke();
+  ctx.strokeStyle = al(COL.guard, .55); ctx.lineWidth = 2; ctx.beginPath();
+  for (let k = 0; k < 4; k++) { const y = -24 + ((k * 14 + P.spin * 10) % 52); ctx.moveTo(-14, y); ctx.lineTo(14, y); }
+  ctx.stroke(); ctx.restore();
+}
+function drawWall() {
+  cellPath(-8); ctx.lineWidth = 18; ctx.strokeStyle = al(COL.guard, .18); ctx.stroke();
+  ctx.lineWidth = 2; ctx.strokeStyle = COL.guard; cellPath(-16); ctx.stroke(); cellPath(0); ctx.stroke();
+  ctx.save(); ctx.setLineDash([.1, 9]); ctx.lineCap = 'round'; ctx.lineWidth = 6; ctx.strokeStyle = al(COL.guard, .7);
+  cellPath(-15); ctx.stroke(); cellPath(-1); ctx.stroke(); ctx.restore();
+  // 取りこみのくぼみ
+  for (const e of endos) if (e.stage === 'pit') { const r = RAILS[3], k = Math.min(1, e.t / 1.4); ctx.fillStyle = al(COL.guard, .5); circle(r.x2, r.y2 + 4 + k * 14, 6 + k * 12); ctx.fill(); }
+  // 門
+  gate(PUMP.x, PUMP.y, 0, PUMP.flash > 0 ? al(COL.guard, .45) : COL.machine, () => { ctx.fillStyle = COL.guard; ctx.font = '700 18px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('⇅', 0, 0); });
+  const o = CHAN.open > 0 ? 7 : 0;
+  ctx.save(); ctx.translate(CHAN.x, CHAN.y); ctx.fillStyle = COL.machine; ctx.strokeStyle = COL.guard; ctx.lineWidth = 2.5;
+  for (const s of [-1, 1]) { ctx.beginPath(); ctx.roundRect(s < 0 ? -18 - o : 2 + o, -20, 16, 40, 4); ctx.fill(); ctx.stroke(); }
+  ctx.restore();
+  for (const g of GLUTS) gate(g.x, g.y, g.nx ? Math.PI / 2 : 0, COL.machine, () => { ctx.strokeStyle = COL.energy; ctx.lineWidth = 2.5; hexPath(0, 0, 7); ctx.stroke(); });
+  ctx.save(); ctx.translate(RECEP.x, RECEP.y); ctx.strokeStyle = COL.guard; ctx.lineWidth = 4; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(0, 14); ctx.lineTo(0, -26); ctx.moveTo(0, -26); ctx.lineTo(-12, -40); ctx.moveTo(0, -26); ctx.lineTo(12, -40); ctx.stroke();
+  ctx.fillStyle = RECEP.blink > 0 ? COL.robot : COL.machine; circle(0, 14, 9); ctx.fill(); ctx.lineWidth = 2.5; ctx.stroke();
+  if (RECEP.blink > 0) { ctx.strokeStyle = al(COL.robot, RECEP.blink / 1.4); ctx.lineWidth = 3; circle(0, 14, 20 + (1.4 - RECEP.blink) * 40); ctx.stroke(); }
+  ctx.restore();
+}
+function gate(x, y, rot, fill, icon) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+  ctx.beginPath(); ctx.roundRect(-17, -22, 34, 44, 6); ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = COL.guard; ctx.lineWidth = 2.5; ctx.stroke();
+  icon(); ctx.restore();
+}
+function hexPath(x, y, r) { ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; i ? ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r) : ctx.moveTo(x + r, y); } ctx.closePath(); }
+
+function drawSmall(p) {
+  const a = p.life < Infinity ? clamp((p.life - p.age) / 1.5, 0, 1) : 1;
+  ctx.globalAlpha = a;
+  switch (p.type) {
+    case 'atp': case 'adp':
+      ctx.beginPath(); ctx.roundRect(p.x - 8, p.y - 5, 15, 10, 2.5);
+      if (p.type === 'atp') { ctx.fillStyle = COL.energy; ctx.fill(); ctx.fillStyle = al(COL.robot, .9); ctx.fillRect(p.x - 5, p.y - 2, 9, 4); }
+      else { ctx.fillStyle = al(COL.energy, .12); ctx.fill(); ctx.strokeStyle = al(COL.energy, .8); ctx.lineWidth = 1.5; ctx.stroke(); }
+      ctx.fillStyle = p.type === 'atp' ? COL.energy : al(COL.energy, .8); ctx.fillRect(p.x + 7, p.y - 2.5, 3, 5);
+      break;
+    case 'glc': ctx.fillStyle = COL.machine; ctx.strokeStyle = COL.energy; ctx.lineWidth = 2.5; hexPath(p.x, p.y, 8); ctx.fill(); ctx.stroke(); break;
+    case 'pyr': ctx.fillStyle = al(COL.energy, .75); ctx.beginPath(); ctx.moveTo(p.x, p.y - 6); ctx.lineTo(p.x + 6, p.y + 5); ctx.lineTo(p.x - 6, p.y + 5); ctx.closePath(); ctx.fill(); break;
+    case 'o2': ctx.fillStyle = '#E0574F'; circle(p.x - 3, p.y, 3.8); ctx.fill(); circle(p.x + 3, p.y, 3.8); ctx.fill(); break;
+    case 'co2': ctx.fillStyle = '#E0574F'; circle(p.x - 6, p.y, 3.2); ctx.fill(); circle(p.x + 6, p.y, 3.2); ctx.fill(); ctx.fillStyle = COL.small; circle(p.x, p.y, 4); ctx.fill(); break;
+    case 'aa': ctx.fillStyle = p.color; circle(p.x, p.y, 5); ctx.fill(); ctx.strokeStyle = al(COL.ink, .3); ctx.lineWidth = 1; ctx.stroke(); break;
+    case 'na': case 'k': ctx.fillStyle = p.type === 'na' ? '#9575CD' : '#3FA89B'; circle(p.x, p.y, 4.5); ctx.fill(); break;
+    case 'old':
+      drawBlob(p.x, p.y, COL.small);
+      ctx.fillStyle = COL.guard; circle(p.x + 12, p.y - 10, 4); ctx.fill(); circle(p.x + 18, p.y - 15, 4); ctx.fill(); break;
+    case 'horm':
+      ctx.fillStyle = COL.machine; ctx.strokeStyle = COL.guard; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(p.x - 10, p.y - 7, 20, 14, 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.x - 10, p.y - 7); ctx.lineTo(p.x, p.y + 1); ctx.lineTo(p.x + 10, p.y - 7); ctx.stroke(); break;
+  }
+  ctx.globalAlpha = 1;
+}
+function drawTRNA(t) {
+  ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.hop ? 0 : t.rot);
+  ctx.strokeStyle = COL.info; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(-5, -6); ctx.lineTo(-5, 8); ctx.lineTo(9, 8); ctx.stroke();
+  if (t.loaded) { ctx.fillStyle = t.color; circle(-5, -11, 5); ctx.fill(); ctx.strokeStyle = al(COL.ink, .3); ctx.lineWidth = 1; ctx.stroke(); }
+  ctx.restore();
+}
+function drawBlob(x, y, col, k = 1) {
+  ctx.fillStyle = col; ctx.strokeStyle = al(COL.ink, .25); ctx.lineWidth = 1.2;
+  for (const [dx, dy, r] of [[-5, -3, 6.5], [4, -5, 6], [5, 4, 6.5], [-4, 5, 6], [0, 0, 6]]) { circle(x + dx * k, y + dy * k, r * k); ctx.fill(); ctx.stroke(); }
+}
+function drawTag(x, y) { ctx.save(); ctx.translate(x + 10, y - 10); ctx.rotate(Math.PI / 4); ctx.fillStyle = COL.move; ctx.fillRect(-4, -4, 8, 8); ctx.restore(); }
+function drawVesicle(x, y, r, inner) {
+  circle(x, y, r); ctx.fillStyle = al(COL.move, .12); ctx.fill(); ctx.strokeStyle = COL.move; ctx.lineWidth = 3; ctx.stroke();
+  if (inner) inner();
+}
+function drawJob(j) {
+  const d = j.dock;
+  switch (j.stage) {
+    case 'wait': drawTape(j.x, j.y, 44); break;
+    case 'export': drawTape(j.x, j.y, 44); break;
+    case 'tl': {
+      drawTape(d.x - 14 + j.beads.length * 5, d.y + 1, 60);
+      j.beads.forEach((c, i) => { ctx.fillStyle = c; circle(d.x + 6 + i * 7, d.tube.y + Math.sin(i * 1.2 + .5) * 7, 5); ctx.fill(); });
+      break;
+    }
+    case 'fold': {
+      const e = ease(Math.min(1, j.t / 1.2));
+      if (e < 1) j.beads.forEach((c, i) => { const bx = d.x + 6 + i * 7, by = d.tube.y + Math.sin(i * 1.2 + .5) * 7, a = i * 2.4; ctx.fillStyle = c; circle(bx + (j.x + Math.cos(a) * 6 - bx) * e, by + (j.y + Math.sin(a) * 6 - by) * e, 5); ctx.fill(); });
+      else drawBlob(j.x, j.y, COL.build);
+      break;
+    }
+    case 'line': drawBlob(j.x, j.y, COL.build); break;
+    case 'bud': drawVesicle(j.x, j.y, 18 * Math.min(1, j.t / .8), () => drawBlob(j.x, j.y, COL.build, .8)); break;
+    case 'toGolgi': drawVesicle(j.x, j.y, 18, () => drawBlob(j.x, j.y, COL.build, .8)); break;
+    case 'golgi': drawBlob(j.x, j.y, COL.build, .8); if (j.t > 3) drawTag(j.x, j.y); break;
+    case 'bud2': drawVesicle(j.x, j.y, 18 * Math.min(1, j.t / .7), () => { drawBlob(j.x, j.y, COL.build, .8); drawTag(j.x, j.y); }); break;
+    case 'toRail': drawVesicle(j.x, j.y, 18, () => { drawBlob(j.x, j.y, COL.build, .8); drawTag(j.x, j.y); }); break;
+    case 'fuse': {
+      const e = Math.min(1, j.t / 1.3), x = j.x + j.ux * (e * 30 - 26), y = j.y + j.uy * (e * 30 - 26);
+      ctx.globalAlpha = 1 - e; drawVesicle(j.x - j.ux * 20, j.y - j.uy * 20, 18 * (1 - e * .5)); ctx.globalAlpha = 1;
+      drawBlob(x, y, COL.build, .8); drawTag(x, y); break;
+    }
+    case 'out': ctx.globalAlpha = clamp(1 - j.t / 5, 0, 1); drawBlob(j.x + j.ux * 4, j.y + j.uy * 4, COL.build, .8); drawTag(j.x + j.ux * 4, j.y + j.uy * 4); ctx.globalAlpha = 1; break;
+  }
+}
+function drawDocks() {
+  for (const d of DOCKS) {
+    const busy = d.job && d.job.stage === 'tl', y = d.y + (busy ? Math.sin(T * 12) : 0);
+    ctx.fillStyle = COL.build; ctx.strokeStyle = al(COL.ink, .35); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(d.x, y + 4, 17, 11, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = al(COL.build, .65); ctx.beginPath(); ctx.ellipse(d.x, y - 9, 13, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  }
+}
+function drawMotor(m) {
+  const r = m.rail, f = motorFeet(m), J = motorJoint(m), col = COL.move;
+  ctx.strokeStyle = col; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+  for (const k of ['a', 'b']) {
+    const s = f[k], lift = f.foot === 'f' + k ? f.lift : 0, q = railPt(r, s), fx = q.x + r.nx * lift, fy = q.y + r.ny * lift;
+    ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(J.x, J.y); ctx.stroke();
+    ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(fx, fy, 6, 4, Math.atan2(r.uy, r.ux), 0, Math.PI * 2); ctx.fill();
+  }
+  const c = cargoPos(m);
+  ctx.beginPath(); ctx.moveTo(J.x, J.y); ctx.lineTo(c.x - r.nx * 16, c.y - r.ny * 16); ctx.stroke();
+  if (m.type === 'dyn') { ctx.fillStyle = COL.machine; circle(J.x, J.y, 7); ctx.fill(); ctx.lineWidth = 3; ctx.stroke(); }
+  if (m.cargo.job) drawVesicle(c.x, c.y, 18, () => { drawBlob(c.x, c.y, COL.build, .8); drawTag(c.x, c.y); });
+  else drawVesicle(c.x, c.y, 18, () => { ctx.fillStyle = al(COL.guard, .7); for (let k = 0; k < 4; k++) { circle(c.x + Math.cos(k * 1.6) * 7, c.y + Math.sin(k * 1.6) * 7, 3.5); ctx.fill(); } });
+  if (m.wait > .3) { ctx.fillStyle = COL.guard; ctx.font = '700 18px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('!', J.x + 14, J.y - 8); }
+}
+
+// ===== 名前の札 =====
+const LABELS = [
+  {k: 'nucleus', x: N.x, y: N.y - N.r - 38, big: 1}, {k: 'er', x: 1205, y: 900, big: 1}, {k: 'golgi', x: 1565, y: 905, big: 1},
+  {k: 'centrosome', x: C.x + 82, y: C.y - 22}, {k: 'lysosome', x: L.x, y: L.y + 72}, {k: 'proteasome', x: P.x, y: P.y + 56},
+  {k: 'pump', x: PUMP.x, y: PUMP.y - 52}, {k: 'channel', x: CHAN.x, y: CHAN.y - 52}, {k: 'receptor', x: RECEP.x, y: RECEP.y + 52},
+  {k: 'glut', x: GLUTS[0].x + 78, y: GLUTS[0].y}, {k: 'glut', x: GLUTS[1].x, y: GLUTS[1].y - 52}, {k: 'glut', x: GLUTS[2].x, y: GLUTS[2].y + 52},
+  {k: 'membrane', x: 1880, y: CELL.b + 50, big: 1}, {k: 'rail', x: railPt(RAILS[1], 430).x, y: railPt(RAILS[1], 430).y + 34},
+  ...MITOS.map(m => ({k: 'mito', x: m.x, y: m.y + 62, big: 1})),
+];
+function drawLabels() {
+  if (!$('#labels').checked) return;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const lb of LABELS) {
+    if (!lb.big && cam.s < .42) continue;
+    const [nick, name, col] = INFO[lb.k], sx = (lb.x - cam.x) * cam.s, sy = (lb.y - cam.y) * cam.s;
+    if (sx < -100 || sx > vw + 100 || sy < -40 || sy > vh + 40) continue;
+    ctx.font = '800 13px "M PLUS Rounded 1c", sans-serif'; const w1 = ctx.measureText(nick).width;
+    ctx.font = '400 11px "M PLUS Rounded 1c", sans-serif'; const w2 = ctx.measureText(name).width;
+    const w = Math.max(w1, w2) + 20;
+    ctx.fillStyle = al(COL.panel, .92); ctx.strokeStyle = COL.line; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(sx - w / 2, sy - 18, w, 36, 6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = COL[col]; ctx.fillRect(sx - w / 2, sy - 18 + 6, 3, 24);
+    ctx.fillStyle = COL.ink; ctx.font = '800 13px "M PLUS Rounded 1c", sans-serif'; ctx.fillText(nick, sx + 2, sy - 6);
+    ctx.fillStyle = COL.muted; ctx.font = '400 11px "M PLUS Rounded 1c", sans-serif'; ctx.fillText(name, sx + 2, sy + 9);
+  }
+}
+function ring(x, y, color, text, dash) {
+  const sx = (x - cam.x) * cam.s, sy = (y - cam.y) * cam.s, r = Math.max(18, 26 * cam.s) + Math.sin(performance.now() / 200) * 2;
+  ctx.save(); if (dash) ctx.setLineDash([5, 4]);
+  ctx.strokeStyle = color; ctx.lineWidth = 3; circle(sx, sy, r); ctx.stroke(); ctx.restore();
+  if (text) { ctx.fillStyle = color; ctx.font = '800 16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(text, sx, sy - r - 4); }
+}
+
+function draw() {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = COL.outside; ctx.fillRect(0, 0, vw, vh);
+  ctx.setTransform(dpr * cam.s, 0, 0, dpr * cam.s, -cam.x * cam.s * dpr, -cam.y * cam.s * dpr);
+  const v = {x1: cam.x - 20, y1: cam.y - 20, x2: cam.x + vw / cam.s + 20, y2: cam.y + vh / cam.s + 20};
+  drawFloor(); drawWater(v); drawCrowd();
+  drawRails(); drawER(); drawGolgi();
+  for (const m of MITOS) drawMito(m);
+  drawLyso(); drawProteasome(); drawNucleus();
+  for (const p of smalls) if (p.region === 'out') drawSmall(p);
+  drawWall();
+  for (const p of smalls) if (p.region !== 'out') drawSmall(p);
+  for (const t of trnas) drawTRNA(t);
+  for (const j of jobs) if (j.stage === 'out' || j.stage === 'fuse') drawJob(j);
+  drawDocks();
+  for (const j of jobs) if (j.stage !== 'out' && j.stage !== 'fuse') drawJob(j);
+  for (const m of motors) drawMotor(m);
+  for (const e of endos) if (e.stage === 'toL') drawVesicle(e.x, e.y, 18 * (1 - (e.hop ? e.hop.t : 1) * .4));
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  drawLabels();
+  const f = focusJob();
+  if (f) ring(f.x, f.y, COL.robot, '★');
+  if (sel && sel.obj && !sel.obj.dead) ring(sel.obj.x, sel.obj.y, COL.focus, '', true);
+}
+
+// ===== カメラと操作 =====
+function resize() {
+  dpr = window.devicePixelRatio || 1; vw = stageEl.clientWidth; vh = stageEl.clientHeight;
+  cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr);
+  if (cam.fit) fit();
+}
+const fitScale = () => Math.min(vw / (W + 120), vh / (H + 160));
+function fit() { cam.s = fitScale(); cam.x = W / 2 - vw / 2 / cam.s; cam.y = H / 2 - vh / 2 / cam.s; cam.fit = true; }
+function zoomAt(sx, sy, f) {
+  const wx = cam.x + sx / cam.s, wy = cam.y + sy / cam.s;
+  cam.s = clamp(cam.s * f, fitScale() * .7, 3); cam.x = wx - sx / cam.s; cam.y = wy - sy / cam.s; cam.fit = false; cam.zoomTo = null;
+}
+function camUpdate(rdt) {
+  const f = focusJob();
+  if (!$('#follow').checked || !f) return;
+  const k = 1 - Math.exp(-rdt * 3);
+  if (cam.zoomTo) { const cx = cam.x + vw / 2 / cam.s, cy = cam.y + vh / 2 / cam.s; cam.s += (cam.zoomTo - cam.s) * k; cam.x = cx - vw / 2 / cam.s; cam.y = cy - vh / 2 / cam.s; if (Math.abs(cam.zoomTo - cam.s) < .005) cam.zoomTo = null; }
+  const cx = cam.x + vw / 2 / cam.s, cy = cam.y + vh / 2 / cam.s;
+  cam.x += (f.x - cx) * k; cam.y += (f.y - cy) * k; cam.fit = false;
+}
+function focusJob() {
+  let f = jobs.find(j => j.id === focusId);
+  if (!f) { const later = jobs.filter(j => j.id > focusId); if (later.length) { f = later.reduce((a, b) => a.id < b.id ? a : b); focusId = f.id; } }
+  return f || null;
+}
+function startFollow() { $('#follow').checked = true; cam.zoomTo = Math.max(cam.s, .85); }
+
+const ptrs = new Map(); let drag = null, pinch = null;
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, {x: e.offsetX, y: e.offsetY});
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = {d: Math.hypot(a.x - b.x, a.y - b.y)}; drag = null; }
+  else drag = {x: e.offsetX, y: e.offsetY, cx: cam.x, cy: cam.y, moved: 0};
+});
+cv.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.set(e.pointerId, {x: e.offsetX, y: e.offsetY});
+  if (pinch && ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+    zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, d / pinch.d); pinch.d = d; return;
+  }
+  if (!drag) return;
+  const dx = e.offsetX - drag.x, dy = e.offsetY - drag.y; drag.moved = Math.max(drag.moved, Math.hypot(dx, dy));
+  if (drag.moved > 4) { cv.classList.add('dragging'); cam.x = drag.cx - dx / cam.s; cam.y = drag.cy - dy / cam.s; cam.fit = false; $('#follow').checked = false; }
+});
+function endPtr(e) {
+  if (drag && drag.moved <= 4 && ptrs.size === 1) select(cam.x + e.offsetX / cam.s, cam.y + e.offsetY / cam.s);
+  ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; drag = null; cv.classList.remove('dragging');
+}
+cv.addEventListener('pointerup', endPtr);
+cv.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); drag = null; pinch = null; });
+cv.addEventListener('wheel', e => { e.preventDefault(); zoomAt(e.offsetX, e.offsetY, Math.exp(-e.deltaY * .0015)); }, {passive: false});
+$('#zin').onclick = () => zoomAt(vw / 2, vh / 2, 1.3);
+$('#zout').onclick = () => zoomAt(vw / 2, vh / 2, 1 / 1.3);
+$('#zfit').onclick = () => { $('#follow').checked = false; fit(); };
+$('#follow').onchange = e => { if (e.target.checked) startFollow(); };
+$('#restart').onclick = () => { focusId = POL.busy ? POL.busy.id : nextId; startFollow(); };
+let paused = false;
+$('#pause').onclick = () => { paused = !paused; $('#pause').textContent = paused ? '▶ 再開' : '❚❚ 一時停止'; };
+let speed = 1;
+$('#speed').oninput = e => { speed = +e.target.value; $('#speedv').textContent = speed + 'x'; };
+
+// ===== しらべる =====
+let sel = null;
+function hit(x, y) {
+  const near = (o, r) => Math.hypot(o.x - x, o.y - y) < r;
+  for (const m of motors) { const c = cargoPos(m); if (near(c, 22) || near(motorJoint(m), 18)) return {key: m.cargo.job ? 'kinesin' : 'dynein', obj: m.cargo.job || null}; }
+  for (const j of jobs) if (near(j, 22) && j.stage !== 'tx') {
+    const key = {wait: 'mrna', export: 'mrna', tl: 'mrna', bud: 'vesicle', toGolgi: 'vesicle', bud2: 'vesicle', toRail: 'vesicle', fuse: 'vesicle'}[j.stage] || 'protein';
+    return {key, obj: j};
+  }
+  for (const t of trnas) if (near(t, 14)) return {key: 'trna', obj: t};
+  for (const p of smalls) if (near(p, 12)) return {key: p.type, obj: p};
+  for (const d of DOCKS) if (near(d, 22)) return {key: 'ribosome'};
+  if (POL.busy ? near(POL.busy, 24) : near({x: GENE.x1 - 10, y: GENE.y}, 24)) return {key: 'polymerase'};
+  if (near(PUMP, 26)) return {key: 'pump'};
+  if (near(CHAN, 26)) return {key: 'channel'};
+  if (near({x: RECEP.x, y: RECEP.y - 10}, 34)) return {key: 'receptor'};
+  for (const g of GLUTS) if (near(g, 26)) return {key: 'glut'};
+  for (const m of MITOS) { if (near(m, 16)) return {key: 'synthase'}; if (mitoDist(m, x, y) < 0) return {key: 'mito'}; }
+  if (near(L, L.r)) return {key: 'lysosome'};
+  if (Math.abs(x - P.x) < 20 && Math.abs(y - P.y) < 32) return {key: 'proteasome'};
+  if (near(C, 30)) return {key: 'centrosome'};
+  const dn = Math.hypot(x - N.x, y - N.y);
+  if (dn < N.r + 4) {
+    if (dn > N.r - 16) { const a = Math.round(Math.atan2(y - N.y, x - N.x) / (Math.PI / 6)) * Math.PI / 6; if (near(poreXY(a, N.r - 4.5), 16)) return {key: 'pore'}; }
+    if (near(NUCLEOLUS, NUCLEOLUS.r)) return {key: 'nucleolus'};
+    if (Math.abs(y - GENE.y) < 14 || DNA_PATH.some(p => near(p, 8))) return {key: 'dna'};
+    return {key: 'nucleus'};
+  }
+  for (const tb of TUBES) if (x > tb.x1 && x < tb.x2 && Math.abs(y - tb.y) < tb.h + 8) return {key: 'er'};
+  if (x > GOLGI.x1 - 6 && x < GOLGI.x2 && Math.abs(y - GOLGI.y) < 165) return {key: 'golgi'};
+  for (const r of RAILS) { const s = proj(r, x, y); if (s > 0 && s < r.len) { const q = railPt(r, s); if (near(q, 10)) return {key: 'rail'}; } }
+  for (const c of crowd) if (near(c, c.r + 3)) return {key: 'crowd', obj: c};
+  if (inCell(x, y, -14) && !inCell(x, y, 18)) return {key: 'membrane'};
+  if (inCell(x, y)) return {key: 'cytosol'};
+  return null;
+}
+function esc(s) { return s.replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c])); }
+function select(x, y) {
+  sel = hit(x, y);
+  const el = $('#info');
+  if (!sel) { el.innerHTML = '<p class="empty">ここは細胞の外。工場の中の部品や粒をクリックしてね。</p>'; return; }
+  const [nick, name, col, job, real, ball, note] = INFO[sel.key];
+  el.innerHTML = `<div class="head"><span class="chip" style="background:var(--c-${col})"></span><h3>${esc(nick)}</h3></div>
+    <div class="formal">${esc(name)}</div><p>${esc(job)}</p>
+    <dl>${real ? `<dt>本当の大きさ</dt><dd>${esc(real)}</dd>` : ''}${ball ? `<dt>1000万倍すると</dt><dd>${esc(ball)}</dd>` : ''}</dl>
+    ${note ? `<p class="note">${esc(note)}</p>` : ''}`;
+}
+
+// ===== 物語とエネルギーの表示 =====
+$('#story').innerHTML = STEPS.map(([h, t]) => `<li><span><b>${h}</b>　${t}</span></li>`).join('');
+const storyLis = [...$('#story').children];
+let lastNarr = '', lastStep = -1, uiT = 0;
+function narration(j) {
+  if (!j) return ['待ち', '次の★の荷物の写しが始まるのを待っているよ'];
+  const n = STAGE_STEP[j.stage], tag = `${n + 1}. ${STEPS[n][0]}`;
+  const txt = {
+    tx: '写し係（RNAポリメラーゼ）が、設計図（DNA）の1ページを mRNA に写しているよ',
+    wait: '写し終わった mRNA が、あいている組み立てロボットを待っているよ',
+    export: '設計図のコピー（mRNA）が、図書館の門（核膜孔）を通って外へ出ていくよ',
+    tl: j.starve > .5 ? 'アミノ酸をのせた tRNA が近くに来るのを待っているよ' : `リボソームが mRNA を読んで、tRNA が届けたアミノ酸を1つずつつないでいるよ（${j.beads ? j.beads.length : 0} / 10）`,
+    fold: 'つながった鎖がくしゃっと折りたたまれて、タンパク質の形になったよ',
+    line: 'できたタンパク質が、小胞体（組み立てライン）の中を流れていくよ',
+    bud: 'ラインの終わりで、運び袋（小胞）に包まれたよ',
+    toGolgi: '運び袋に入って、ゴルジ体（荷づくりセンター）へ運ばれるよ',
+    golgi: '荷づくりセンターの中を進みながら、荷札（糖のかざり）がつくよ',
+    bud2: '荷札をつけ終わって、出荷用の運び袋に詰めたよ',
+    toRail: '運び屋（キネシン）が荷物を受けとったよ',
+    walk: j.motor && j.motor.wait > .3 ? '近くに電池（ATP）がないので、運び屋が止まって待っているよ' : '運び屋（キネシン）がレール（微小管）を歩いて運ぶよ。1歩ごとに ATP を1個使う',
+    fuse: '運び袋が細胞膜と合体して、口が開いたよ',
+    out: '出荷！ タンパク質が細胞の外へ出ていったよ',
+  }[j.stage];
+  return [tag, txt];
+}
+function uiUpdate(rdt) {
+  const f = focusJob(), [tag, txt] = narration(f), key = tag + txt;
+  if (key !== lastNarr) { lastNarr = key; $('#narr').innerHTML = `<span class="lnb">★ ${esc(tag)}</span><span>${esc(txt)}</span>`; }
+  const st = f ? STAGE_STEP[f.stage] : -1;
+  if (st !== lastStep) { lastStep = st; storyLis.forEach((li, i) => li.classList.toggle('on', i === st)); }
+  uiT -= rdt;
+  if (uiT <= 0) {
+    uiT = .25; let n = 0; for (const p of smalls) if (p.type === 'atp') n++;
+    $('#eMade').textContent = ST.made; $('#eUsed').textContent = ST.used; $('#eNow').textContent = n;
+  }
+}
+
+// ===== はじめる =====
+readColors();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
+init();
+for (let i = 0; i < 1350; i++) update(1 / 30); // 最初から工場が動いているように、45秒分すすめておく
+ST.made = 0; ST.used = 0;
+focusId = Math.min(...jobs.map(j => j.id));
+new ResizeObserver(resize).observe(stageEl);
+resize();
+let last = performance.now();
+function frame(now) {
+  const rdt = Math.min(.05, (now - last) / 1000); last = now;
+  if (!paused) { let dt = rdt * speed; while (dt > 0) { const s = Math.min(dt, 1 / 30); update(s); dt -= s; } }
+  camUpdate(rdt); draw(); uiUpdate(rdt);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

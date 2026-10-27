@@ -7,7 +7,10 @@
 
 ## 次のテーマ: 細胞の中
 
-細胞の中で働くオブジェクトを子ども向けに可視化する（ふつうの動物細胞、コード工場と同じ単一 HTML ＋ Canvas 2D）。描くオブジェクトの一覧（案）: [docs/cell-objects.md](docs/cell-objects.md)
+細胞の中で働くオブジェクトを子ども向けに可視化する。細胞全体を1つの巨大な2D工場として描き、あちこちの部品が同時に動いている様子を見せる（ふつうの動物細胞、コード工場と同じ単一 HTML ＋ Canvas 2D）。
+
+- モックアップ: `cell.html`（遊べるページ: https://milestone-corp.github.io/code-factory/cell.html ）
+- 描くオブジェクトの一覧と、モックアップでの簡略化: [docs/cell-objects.md](docs/cell-objects.md)
 
 ## 現在のモックアップ（v0）
 
