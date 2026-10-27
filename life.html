@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>36兆分の1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;600;700&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap">
+<style>
+:root{
+  --bg:#E7EAE3; --panel:#F6F7F2; --ink:#1E272B; --muted:#5B676A; --line:#C9D0C6;
+  --narr-bg:#FFF6D6; --card:#FFFFFF; --shadow:rgba(30,39,43,.16);
+  --c-info:#2F6FD6; --c-build:#1F9357; --c-energy:#D9801A; --c-move:#8452D0; --c-guard:#D33F3F; --c-small:#66737A;
+  --robot:#F2C230; --robot-edge:#A77F0B; --focus:#2F6FD6;
+  --t1:#66737A; --t2:#1F9357; --t3:#2F6FD6; --t4:#8452D0; --t5:#D9801A;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#14181B; --panel:#1B2024; --ink:#E4EAE6; --muted:#98A4A1; --line:#303940;
+    --narr-bg:#2E2913; --card:#22282D; --shadow:rgba(0,0,0,.45);
+    --c-info:#5C94F2; --c-build:#3DBB78; --c-energy:#F0A043; --c-move:#A67DF2; --c-guard:#F06A6A; --c-small:#8A969C;
+    --focus:#5C94F2;
+    --t1:#8A969C; --t2:#3DBB78; --t3:#5C94F2; --t4:#A67DF2; --t5:#F0A043;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#14181B; --panel:#1B2024; --ink:#E4EAE6; --muted:#98A4A1; --line:#303940;
+  --narr-bg:#2E2913; --card:#22282D; --shadow:rgba(0,0,0,.45);
+  --c-info:#5C94F2; --c-build:#3DBB78; --c-energy:#F0A043; --c-move:#A67DF2; --c-guard:#F06A6A; --c-small:#8A969C;
+  --focus:#5C94F2;
+  --t1:#8A969C; --t2:#3DBB78; --t3:#5C94F2; --t4:#A67DF2; --t5:#F0A043;
+}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"M PLUS Rounded 1c",system-ui,"Hiragino Maru Gothic ProN",sans-serif;font-size:14px}
+.app{box-sizing:border-box;max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:14px 24px;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px}
+.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.brand h1{font-family:"Dela Gothic One","M PLUS Rounded 1c",sans-serif;font-weight:400;font-size:28px;margin:0;letter-spacing:.03em}
+.brand h1 span{display:inline-block;background:var(--c-guard);color:#fff;padding:0 .25em;border-radius:4px;margin-right:.1em}
+.brand p{margin:0;color:var(--muted)}
+.links{display:flex;gap:14px;flex-wrap:wrap}
+.links a{color:var(--focus);font-weight:700;font-size:13px}
+button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer}
+button:hover{border-color:var(--ink)}
+button.primary{background:var(--robot);color:#1E272B;border:2px solid var(--robot-edge);font-weight:800}
+button.big{font-size:18px;padding:12px 28px;border-radius:12px}
+button.link{background:none;border:0;padding:0;color:var(--focus);font-weight:700;font-size:13px;text-decoration:underline}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-width:0}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px 8px;flex-wrap:wrap}
+.ph h2{margin:0;font-size:15px;font-weight:800;letter-spacing:.04em}
+.hint{color:var(--muted);font-size:12px}
+
+.stage{padding:0 14px 16px;min-height:560px;display:flex;flex-direction:column;gap:14px}
+.intro{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:28px 8px}
+.intro .num{font-family:"Dela Gothic One","M PLUS Rounded 1c",sans-serif;font-size:clamp(40px,9vw,76px);line-height:1;letter-spacing:.02em}
+.intro .num small{font-size:.45em}
+.intro p{margin:0;line-height:1.8;max-width:34em}
+.intro .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+.roll{display:grid;place-items:center;min-height:360px;text-align:center;gap:8px}
+.roll .lbl{color:var(--muted)}
+.roll .name{font-family:"Dela Gothic One","M PLUS Rounded 1c",sans-serif;font-size:clamp(28px,6vw,48px)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;box-shadow:0 8px 24px var(--shadow);animation:pop .45s ease-out}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.portrait{width:150px;height:150px;border-radius:12px;background:var(--panel);display:grid;place-items:center}
+.portrait svg{width:130px;height:130px}
+.card h3{margin:2px 0 0;font-size:26px;font-weight:800}
+.card .nick{color:var(--muted);font-weight:700}
+.tier{display:inline-block;font-size:12px;font-weight:800;color:#fff;border-radius:999px;padding:2px 10px}
+.odds{margin:10px 0 0;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13px}
+.odds dt{color:var(--muted)}
+.odds dd{margin:0;font-weight:700}
+.odds .big{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:18px}
+.conf{font-size:11px;color:var(--muted);font-weight:400}
+.card .job{margin:10px 0 0;line-height:1.7}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.lifebar{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.lifebar .bar{flex:1;height:10px;border-radius:999px;background:var(--line);overflow:hidden}
+.lifebar .bar i{display:block;height:100%;width:0;background:var(--c-guard);transition:width .6s ease}
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;position:relative}
+.timeline li{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:10px;align-items:baseline;animation:slidein .45s ease-out}
+.timeline .when{font-weight:800;font-size:12px;text-align:right;color:var(--muted)}
+.timeline .what{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c-info);border-radius:8px;padding:8px 12px;line-height:1.7}
+.timeline li.branch .what{border-left-color:var(--robot-edge);background:var(--narr-bg)}
+@keyframes slidein{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.ending{border:2px solid var(--ink);border-radius:14px;padding:16px 18px;background:var(--card);display:flex;flex-direction:column;gap:10px;animation:pop .45s ease-out}
+.ending .stamp{font-family:"Dela Gothic One","M PLUS Rounded 1c",sans-serif;font-size:22px}
+.ending p{margin:0;line-height:1.7}
+.stats{display:flex;flex-wrap:wrap;gap:8px}
+.stats div{border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--muted)}
+.stats b{display:block;font-size:16px;color:var(--ink)}
+.note{margin:0;font-size:12px;color:var(--muted);line-height:1.6}
+.note a{color:var(--focus)}
+
+.ten{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.ten div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;font-size:12px;animation:pop .35s ease-out both}
+.ten svg{width:56px;height:56px}
+.ten b{display:block;font-size:13px}
+.tensum{margin:0;padding:10px 12px;border-radius:8px;background:var(--narr-bg);line-height:1.7}
+
+.side{display:flex;flex-direction:column;gap:12px}
+.mix{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px}
+.mixbar{display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.mixbar i{display:block;height:100%}
+.mixleg{display:flex;flex-direction:column;gap:3px;font-size:12px}
+.mixleg span{display:flex;gap:6px;align-items:center}
+.mixleg i{width:10px;height:10px;border-radius:2px;flex:none}
+.mixleg em{font-style:normal;margin-left:auto;font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--muted)}
+.dex{padding:0 14px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.dex div{border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center;font-size:11px;line-height:1.35;background:var(--card)}
+.dex div.no{background:none;border-style:dashed;color:var(--muted)}
+.dex svg{width:40px;height:40px}
+.dex .q{display:grid;place-items:center;width:40px;height:40px;margin:0 auto;font-size:20px;font-weight:800;color:var(--line)}
+.dex b{display:block;font-size:12px}
+.foot{font-size:12px;color:var(--muted);line-height:1.7}
+.foot summary{cursor:pointer;font-weight:700}
+.foot ul{margin:6px 0 0;padding-left:1.2em}
+
+@media (max-width:900px){ .grid{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:560px){
+  .brand h1{font-size:24px}
+  .card{grid-template-columns:1fr}
+  .portrait{width:100%}
+  .timeline li{grid-template-columns:1fr;gap:2px}
+  .timeline .when{text-align:left}
+}
+@media (prefers-reduced-motion: reduce){ .card,.ending,.timeline li,.ten div{animation:none} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><h1><span>36兆</span>分の1</h1><p>体の細胞の1つとして生まれて、一生をすごしてみよう</p></div>
+    <nav class="links"><a href="cell.html">細胞工場（細胞の中）</a><a href="./">コード工場</a></nav>
+  </header>
+
+  <main class="grid">
+    <section class="panel">
+      <div class="ph"><h2 id="stageTitle">誕生</h2><span class="hint" id="stageHint"></span></div>
+      <div class="stage" id="stage"></div>
+    </section>
+
+    <aside class="side">
+      <section class="panel">
+        <div class="ph"><h2>体の細胞の内わけ</h2><span class="hint">数の多さ</span></div>
+        <div class="mix"><div class="mixbar" id="mixbar"></div><div class="mixleg" id="mixleg"></div></div>
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>細胞図鑑</h2><span class="hint" id="dexCount"></span></div>
+        <div class="dex" id="dex"></div>
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>数字について</h2></div>
+        <div class="mix foot">
+          <p style="margin:0">36兆個は、体重70kgくらいの大人の男の人の推定（Hatton ら 2023, PNAS）。女の人は約28兆個、10才の子どもは約17兆個と見積もられている。</p>
+          <details><summary>細胞の数と寿命の出どころ</summary>
+            <ul>
+              <li>合計36兆、核のない血液の細胞（赤血球・血小板）約29兆、白血球 約3.4兆: Hatton ら（2023）</li>
+              <li>赤血球と血小板の割合、血管内皮細胞・神経細胞・グリア細胞・肝細胞・脂肪細胞の数: Sender, Fuchs, Milo（2016, PLoS Biology）の推定をもとにした概数</li>
+              <li>目・耳の細胞の数: 網膜の視細胞（片目で桿体 約9200万、錐体 約460万）、うずまき管の有毛細胞（片耳で約1万5000）の教科書的な値</li>
+              <li>「△」の数は、このページを作るときの大まかな見積もり。研究によって数倍ちがうことがある</li>
+              <li>寿命はおおよその値。一生の中の出来事の起こりやすさは物語として決めたもので、本当の確率ではない</li>
+            </ul>
+          </details>
+        </div>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<script>
+'use strict';
+const TOTAL = 36e12;
+const rnd = (a, b) => a + Math.random() * (b - a);
+const rint = (a, b) => Math.round(rnd(a, b));
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+function jp(n) {
+  const f = (v, u) => (v >= 100 ? Math.round(v) : v >= 10 ? Math.round(v * 10) / 10 : Math.round(v * 100) / 100) + u;
+  if (n >= 1e12) return f(n / 1e12, '兆');
+  if (n >= 1e8) return f(n / 1e8, '億');
+  if (n >= 1e4) return f(n / 1e4, '万');
+  return String(Math.round(n));
+}
+function fmtTime(days) {
+  if (days < 1) return `約${Math.max(1, Math.round(days * 24))}時間`;
+  if (days < 60) return `約${Math.round(days)}日`;
+  if (days < 730) return `約${Math.round(days / 30)}か月`;
+  return `約${Math.round(days / 365)}年`;
+}
+const day = d => d < 1 ? `${Math.max(1, Math.round(d * 24))}時間目` : d < 730 ? `${Math.round(d)}日目` : `${Math.round(d / 365)}年目`;
+
+// ===== 細胞の絵 =====
+const SVG = {
+  rbc: c => `<ellipse cx="60" cy="60" rx="46" ry="42" fill="${c}"/><ellipse cx="60" cy="60" rx="22" ry="19" fill="#fff" opacity=".28"/><ellipse cx="60" cy="60" rx="46" ry="42" fill="none" stroke="#000" stroke-opacity=".15" stroke-width="3"/>`,
+  plt: c => `<path d="M40 56c4-14 22-20 34-12s14 22 4 30-30 8-36-2-6-8-2-16z" fill="${c}"/><circle cx="56" cy="58" r="4" fill="#fff" opacity=".6"/><circle cx="68" cy="64" r="3" fill="#fff" opacity=".6"/><circle cx="60" cy="70" r="3" fill="#fff" opacity=".6"/>`,
+  lym: c => `<circle cx="60" cy="60" r="40" fill="${c}" opacity=".35"/><circle cx="60" cy="60" r="31" fill="${c}"/><circle cx="50" cy="52" r="6" fill="#fff" opacity=".25"/>`,
+  neu: c => `<circle cx="60" cy="60" r="42" fill="${c}" opacity=".3"/><circle cx="44" cy="54" r="12" fill="${c}"/><circle cx="62" cy="48" r="11" fill="${c}"/><circle cx="74" cy="64" r="12" fill="${c}"/><path d="M50 58l10-6m4 4l6 6" stroke="${c}" stroke-width="5"/>`,
+  endo: c => `<rect x="10" y="44" width="100" height="32" rx="16" fill="${c}" opacity=".35"/><ellipse cx="60" cy="60" rx="18" ry="9" fill="${c}"/><path d="M10 60h100" stroke="${c}" stroke-opacity=".3" stroke-width="2" stroke-dasharray="6 6"/>`,
+  hep: c => `<path d="M60 14l40 23v46l-40 23-40-23V37z" fill="${c}" opacity=".35"/><circle cx="48" cy="58" r="11" fill="${c}"/><circle cx="74" cy="64" r="11" fill="${c}"/>`,
+  skin: c => `<g fill="${c}"><rect x="14" y="22" width="92" height="12" rx="4" opacity=".25"/><rect x="18" y="38" width="84" height="14" rx="5" opacity=".4"/><rect x="22" y="56" width="76" height="18" rx="7" opacity=".6"/><rect x="26" y="78" width="68" height="24" rx="10"/></g><circle cx="60" cy="90" r="6" fill="#fff" opacity=".35"/>`,
+  gut: c => `<rect x="38" y="24" width="44" height="80" rx="12" fill="${c}" opacity=".4"/><path d="M42 24v-10m6 10v-10m6 10v-10m6 10v-10m6 10v-10m6 10v-10" stroke="${c}" stroke-width="3" stroke-linecap="round"/><ellipse cx="60" cy="82" rx="11" ry="14" fill="${c}"/>`,
+  neuron: c => `<g stroke="${c}" stroke-width="5" stroke-linecap="round" fill="none"><path d="M44 50L22 30M44 50L16 56M48 64L26 82M70 44l12-24M74 52l26-12"/><path d="M64 66q10 20 30 26t20 18" stroke-width="4"/></g><circle cx="58" cy="54" r="17" fill="${c}"/><circle cx="58" cy="54" r="7" fill="#fff" opacity=".35"/>`,
+  glia: c => `<g stroke="${c}" stroke-width="6" stroke-linecap="round"><path d="M60 60L26 30M60 60L96 26M60 60L20 74M60 60L98 84M60 60L58 104M60 60L60 16"/></g><circle cx="60" cy="60" r="16" fill="${c}"/>`,
+  fat: c => `<circle cx="60" cy="60" r="46" fill="${c}" opacity=".18"/><circle cx="60" cy="60" r="46" fill="none" stroke="${c}" stroke-width="5"/><ellipse cx="92" cy="72" rx="7" ry="11" fill="${c}"/>`,
+  muscle: c => `<rect x="6" y="40" width="108" height="40" rx="20" fill="${c}" opacity=".35"/><path d="M20 40v40M32 40v40M44 40v40M56 40v40M68 40v40M80 40v40M92 40v40M104 40v40" stroke="${c}" stroke-opacity=".6" stroke-width="3"/><g fill="${c}"><ellipse cx="26" cy="46" rx="6" ry="3"/><ellipse cx="62" cy="76" rx="6" ry="3"/><ellipse cx="96" cy="46" rx="6" ry="3"/></g>`,
+  heart: c => `<path d="M14 44h44l12-14h36v26H74l-10 12H14z" fill="${c}" opacity=".4"/><path d="M14 72h50l10 12h32v-24" fill="none" stroke="${c}" stroke-width="5" opacity=".6"/><path d="M26 44v24M40 44v24M88 30v26M100 30v26" stroke="${c}" stroke-width="3" opacity=".7"/><ellipse cx="54" cy="56" rx="8" ry="5" fill="${c}"/>`,
+  beta: c => `<circle cx="60" cy="60" r="40" fill="${c}" opacity=".3"/><circle cx="60" cy="60" r="14" fill="${c}"/><g fill="${c}">${[[34, 40], [86, 44], [80, 84], [38, 82], [60, 28], [94, 66], [28, 62]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4"/>`).join('')}</g>`,
+  rod: c => `<rect x="48" y="10" width="24" height="56" rx="8" fill="${c}"/><path d="M52 18h16M52 26h16M52 34h16M52 42h16M52 50h16" stroke="#fff" stroke-opacity=".35" stroke-width="2"/><rect x="52" y="66" width="16" height="36" rx="6" fill="${c}" opacity=".5"/><circle cx="60" cy="84" r="7" fill="${c}"/>`,
+  cone: c => `<path d="M60 10l14 54H46z" fill="${c}"/><rect x="50" y="64" width="20" height="38" rx="7" fill="${c}" opacity=".5"/><circle cx="60" cy="84" r="8" fill="${c}"/>`,
+  taste: c => `<path d="M60 18q24 40 0 90q-24-50 0-90z" fill="${c}" opacity=".5"/><path d="M60 18v-8m-4 8l-4-6m12 6l4-6" stroke="${c}" stroke-width="3" stroke-linecap="round"/><ellipse cx="60" cy="70" rx="8" ry="11" fill="${c}"/>`,
+  hair: c => `<rect x="38" y="40" width="44" height="66" rx="14" fill="${c}" opacity=".45"/><path d="M48 40V28M56 40V22M64 40V16M72 40V10" stroke="${c}" stroke-width="5" stroke-linecap="round"/><circle cx="60" cy="80" r="10" fill="${c}"/>`,
+  other: c => `<circle cx="60" cy="60" r="40" fill="${c}" opacity=".3"/><circle cx="60" cy="60" r="15" fill="${c}"/><text x="60" y="108" text-anchor="middle" font-size="16" fill="${c}">?</text>`,
+};
+const svg = (t, size) => `<svg viewBox="0 0 120 120" aria-hidden="true">${SVG[t.id](t.color)}</svg>`;
+
+// ===== 細胞の種類（数は 36兆個のうちの推定。conf: ○ = 研究の推定にもとづく、△ = 大まかな見積もり） =====
+const TYPES = [
+  {id: 'rbc', name: '赤血球', nick: '酸素の配達員', n: 27e12, conf: '○', color: '#D33F3F', where: '全身の血管の中', job: '肺で酸素を受けとって、体じゅうに届ける。'},
+  {id: 'plt', name: '血小板', nick: '傷口ふさぎ隊', n: 1.6e12, conf: '○', color: '#C46FA0', where: '全身の血管の中', job: '血管に傷ができると、仲間とくっついて穴をふさぐ。正確には細胞の「かけら」。'},
+  {id: 'lym', name: 'リンパ球', nick: '敵を覚える見張り番', n: 2e12, conf: '△', color: '#7A5BD0', where: 'リンパ節・脾臓・血液', job: '自分の担当の敵（ウイルスなど）を見つけると、仲間を増やしてやっつけ、敵の顔を覚えておく。'},
+  {id: 'neu', name: '好中球などの白血球', nick: '最前線の食べる兵士', n: 1.4e12, conf: '△', color: '#5C8FD6', where: '骨髄・血液・けがの場所', job: '体に入ってきた細菌に真っ先にかけつけて、食べてやっつける。'},
+  {id: 'endo', name: '血管内皮細胞', nick: '血管の内張り', n: 6e11, conf: '○', color: '#D9654A', where: '全身の血管の内側', job: '血管の内側にタイルのように並び、血がなめらかに流れるようにする。'},
+  {id: 'hep', name: '肝細胞', nick: '体の化学工場', n: 2.4e11, conf: '○', color: '#A0522D', where: '肝臓', job: '栄養をためる、たんぱく質を作る、薬やアルコールを分解するなど、たくさんの仕事をする。'},
+  {id: 'skin', name: '表皮の細胞', nick: '体の外壁', n: 2e11, conf: '△', color: '#D9A066', where: '皮ふのいちばん外側', job: '体の外側をおおって、水分が逃げないように、ばい菌が入らないようにする。'},
+  {id: 'gut', name: '腸の上皮細胞', nick: '栄養の吸収係', n: 1e11, conf: '△', color: '#4FA58B', where: '小腸・大腸の内側', job: '食べ物から分解された栄養を吸収して、血液へ渡す。'},
+  {id: 'neuron', name: '神経細胞（ニューロン）', nick: '電気の伝言係', n: 8.6e10, conf: '○', color: '#2F6FD6', where: '脳・せき髄・全身の神経', job: '電気の信号で、ほかの細胞に伝言を送る。考える・覚える・動かすのもこの細胞たち。'},
+  {id: 'glia', name: 'グリア細胞', nick: '脳の世話係', n: 8.5e10, conf: '○', color: '#4C9AB0', where: '脳・せき髄', job: '神経細胞に栄養を届けたり、電線を包んだり、そうじをしたりして支える。'},
+  {id: 'fat', name: '脂肪細胞', nick: 'エネルギーの貯金箱', n: 5e10, conf: '○', color: '#D9A21A', where: 'おなか・皮ふの下など', job: '使いきれなかったエネルギーを脂肪としてためておき、足りないときに出す。'},
+  {id: 'muscle', name: '骨格筋の細胞', nick: '力持ち', n: 1.5e10, conf: '△', color: '#C0392B', where: 'うで・足など体を動かす筋肉', job: 'ちぢんで骨を引っぱり、体を動かす。1つの細胞に核がたくさんある巨大な細胞。'},
+  {id: 'heart', name: '心筋細胞', nick: '一生休まないポンプ', n: 3e9, conf: '△', color: '#B03A5B', where: '心臓', job: 'みんなでいっせいにちぢんで、血液を全身へ送り出す。'},
+  {id: 'beta', name: 'β細胞', nick: '血糖の見張り', n: 1e9, conf: '△', color: '#1F9357', where: 'すい臓（ランゲルハンス島）', job: '血液の中の糖が増えると、インスリンという手紙を出して下げる。'},
+  {id: 'rod', name: '桿体細胞', nick: '暗やみの目', n: 1.84e8, conf: '○', color: '#566C9E', where: '目の奥（網膜）', job: 'ほんのわずかな光でもつかまえる。色はわからない。'},
+  {id: 'cone', name: '錐体細胞', nick: '色を見る目', n: 9.2e6, conf: '○', color: '#8452D0', where: '目の奥（網膜）', job: '赤・緑・青のどれかの光を担当して、色を見分ける。'},
+  {id: 'taste', name: '味細胞', nick: '味の係', n: 5e5, conf: '△', color: '#D96BA0', where: '舌の味蕾', job: '甘い・しょっぱい・すっぱい・苦い・うま味をかぎわける。'},
+  {id: 'hair', name: '有毛細胞', nick: '音をつかまえる', n: 3e4, conf: '○', color: '#D9801A', where: '耳の奥（うずまき管）', job: '音のふるえで頭の毛がゆれると、電気の信号に変える。'},
+];
+const known = TYPES.reduce((s, t) => s + t.n, 0);
+TYPES.push({id: 'other', name: 'そのほかの細胞', nick: 'いろいろな場所の働き手', n: TOTAL - known, conf: '△', color: '#66737A', where: '骨・肺・腎臓・骨髄など', job: 'このシミュレーターでまだ物語を書いていない、たくさんの種類の細胞のどれか。'});
+const TIERS = [[1e-2, 'よくある', 't1'], [1e-3, 'ちょっとめずらしい', 't2'], [1e-4, 'めずらしい', 't3'], [1e-6, 'レア', 't4'], [0, '超レア', 't5']];
+const tier = t => TIERS.find(([p]) => t.n / TOTAL >= p);
+
+// ===== 一生の物語（出来事の起こりやすさは物語として決めたもの） =====
+const LIFE = {
+  rbc() {
+    const ev = [['0日目', '骨の中の血液工場（骨髄）で生まれた。'], ['骨髄を出る前', '核（設計図の図書館）をすててしまった。体をやわらかく折り曲げて、酸素を運ぶヘモグロビンを約2億7000万個も積むためだ。'], ['1日目', '血管へ出発！ 肺で酸素を受けとって、全身へ。体を1周するのに約1分。'], ['3日目', '自分より細い毛細血管を、体を折り曲げてすり抜けた。']];
+    let span = rint(110, 130), end; const x = Math.random();
+    if (x < .12) { span = rint(10, 100); ev.push([day(span), 'けがをした場所を通りかかって、血のかたまりにからめとられた。', 1]); end = ['かさぶたの一部になった', '傷口をふさぐかたまりの中で、役目を終えた。']; }
+    else if (x < .15) { const d = rint(10, 60); ev.push([day(d), '献血で体の外へ！ 冷やされた袋の中で、ほかの人のもとへ運ばれた。', 1], [day(d + 4), 'ほかの人の体の中で、また酸素を運びはじめた。']); end = ['ほかの人の体で働いた', '生まれた体とはちがう人の中で、最後まで酸素を運んだ。']; }
+    else { ev.push(['60日目ごろ', '運んでいる酸素は、自分では使わない。発電所（ミトコンドリア）がないので、ブドウ糖を半分に割ってエネルギーにしている。'], ['100日目ごろ', '体がだんだんかたくなって、細い血管を通りにくくなってきた。']); end = ['脾臓で食べられた', `${span}日目、脾臓のマクロファージに食べられた。体の鉄はリサイクルされて、新しい赤血球に使われる。`]; }
+    return {ev, end, span, stats: [['体を回った回数', '約' + jp(span * 1440) + '周']]};
+  },
+  plt() {
+    const ev = [['0日目', '骨髄の「巨核球」という大きな細胞から、ちぎれて生まれた。1つの巨核球から数千個の血小板ができる。'], ['1日目', '核のない細胞のかけらとして、血管の中をパトロール。']];
+    let span = rint(7, 10), end;
+    if (Math.random() < .3) { span = rint(1, 7); ev.push([day(span), '血管に傷！ 形を変えて手をのばし、仲間とくっついて穴をふさいだ。', 1]); end = ['傷口のふたになった', '血が止まるまで、仲間と傷口をふさぎつづけた。']; }
+    else end = ['脾臓で片づけられた', `${span}日目、古くなって脾臓や肝臓で片づけられた。`];
+    return {ev, end, span, stats: []};
+  },
+  lym() {
+    const ev = [['0日目', '骨髄で生まれて、胸腺という「学校」へ。'], ['数日〜数週間', '自分の体を攻撃しないかテストされた。いっしょに入学した仲間の多くは不合格になった。'], ['卒業', 'リンパ節を見回る旅へ。自分が見分けられる敵は、世界でたった1種類だけ。']];
+    let span, end, x = Math.random();
+    if (x < .6) { span = rint(120, 1500); ev.push([day(span * .7), '何年も見回ったけれど、担当の敵には出会わなかった。多くのリンパ球がそうだ。', 1]); end = ['出番がないまま役目を終えた', 'もしもの時のために、ずっと準備していた。それも大事な仕事だ。']; }
+    else {
+      const d = rint(30, 300); ev.push([day(d), 'ついに担当の敵（ウイルス）を見つけた！', 1], [day(d + 3), '分裂して、同じ顔の仲間を何千個にも増やした。'], [day(d + 10), '仲間といっしょに、ウイルスに乗っとられた細胞をやっつけた。']);
+      if (Math.random() < .3) { span = rint(10, 50) * 365; ev.push([day(d + 30), '「記憶細胞」に選ばれた。同じ敵がまた来たら、すぐに戦える。', 1]); end = ['何十年も体を守った', '記憶細胞として、同じ敵が二度と暴れないように見張りつづけた。']; }
+      else { span = d + rint(20, 40); end = ['戦いを終えて休んだ', '敵がいなくなると、増えた仲間の多くは静かに役目を終える。']; }
+    }
+    return {ev, end, span, stats: []};
+  },
+  neu() {
+    const ev = [['0日目', '骨髄で生まれた。好中球は1日に約1000億個も作られる。'], ['8時間目', '血液に出て、数時間だけパトロール。']];
+    let span, end;
+    if (Math.random() < .6) {
+      span = rnd(1, 3); ev.push([day(.6), '細菌が入ってきた！ 血管のすき間をすり抜けて、現場へかけつけた。', 1], [day(.8), '細菌をまるごと飲みこんで、分解した。']);
+      if (Math.random() < .35) { ev.push([day(1), 'さいごの手段。自分のDNAをあみのように投げて、細菌をつかまえた。', 1]); end = ['あみを投げて戦った', 'DNAのあみで、細菌が広がるのを止めた。']; }
+      else end = ['戦って「うみ」になった', '細菌と戦って力つき、仲間といっしょに「うみ」になった。'];
+    } else { span = rnd(.5, 2); end = ['静かに片づけられた', '出番がないまま寿命が来て、マクロファージに片づけられた。']; }
+    return {ev, end, span, stats: []};
+  },
+  endo() {
+    const ev = [['0日目', '血管の内側に、タイルのように並んだ。'], ['1か月目', '表面をつるつるに保って、血がかたまらないようにしている。体の血管を全部つなぐと、約10万km（地球2周半）と言われる。'], ['半年目', '白血球が通りたがっていたので、すき間を開けて通してあげた。']];
+    if (Math.random() < .3) ev.push(['2年目', '近くでけが！ 分裂して伸び、新しい血管を作った。', 1]);
+    const span = rint(2, 6) * 365;
+    return {ev, end: ['となりの細胞にあとを任せた', '何年も働いたあと、自分で静かに役目を終え、となりの細胞が分裂してすき間をうめた。'], span, stats: []};
+  },
+  hep() {
+    const ev = [['0日目', '肝臓で生まれた。核が2つある細胞も多い。'], ['1日目', '腸から運ばれてきた、栄養たっぷりの血液を受けとった。'], ['1週間目', '糖をためたり、血液のたんぱく質を作ったり、薬やアルコールを分解したり。仕事は500以上あると言われる。'], ['1か月目', '脂肪の消化を助ける「胆汁」を作って、腸へ送った。']];
+    if (Math.random() < .2) ev.push(['半年目', '肝臓の一部が手術でなくなった！ 残った仲間と分裂して、元の大きさまで戻した。', 1]);
+    const span = rint(200, 1000);
+    return {ev, end: ['新しい細胞にあとを任せた', `${fmtTime(span)}働いて、静かに役目を終えた。`], span, stats: []};
+  },
+  skin() {
+    const ev = [['0日目', '皮ふのいちばん下の層で生まれた。'], ['1週間目', '下で生まれた新しい細胞に、少しずつ上へ押し上げられていく。かたいたんぱく質（ケラチン）を体にためていく。']];
+    if (Math.random() < .25) ev.push(['10日目', '日焼け！ となりの色素細胞からメラニンの「日がさ」をもらって、核を紫外線から守った。', 1]);
+    ev.push(['2週間目', 'いちばん上に着くと、核がなくなって平たくなった。もう生きていないけれど、体の壁として守りつづける。']);
+    const span = rint(28, 45);
+    return {ev, end: ['垢になってはがれた', `${span}日目ごろ、垢になって体からはがれ落ちた。`], span, stats: []};
+  },
+  gut() {
+    const ev = [['0日目', '腸のひだの谷底で生まれた。'], ['1日目', 'ひだ（じゅう毛）の先へ向かって、毎日少しずつ登っていく。'], ['2日目', '表面の細かい毛で、糖やアミノ酸を吸収して血液へ渡した。']];
+    if (Math.random() < .2) ev.push(['3日目', 'ばい菌が近づいてきた！ ねばねばの粘液に守られて、だいじょうぶだった。', 1]);
+    const span = rint(3, 5);
+    return {ev, end: ['腸の中へはがれ落ちた', `${span}日目、ひだのてっぺんから腸の中へはがれ落ち、うんちの一部になった。体の中でいちばん入れかわりが速い細胞の1つ。`], span, stats: []};
+  },
+  neuron() {
+    const role = [['見る', '目からの信号を受けとって、形や動きを見分ける係になった。'], ['動かす', 'せき髄から足の指まで、1mもある腕（軸索）を伸ばして、筋肉に「動け」と伝える係になった。'], ['覚える', '海馬という場所で、新しいことを覚える係になった。']][rint(0, 2)];
+    const ev = [['生まれる前', 'お母さんのおなかの中で、持ち主より先に生まれた。'], ['生まれる前', '決められた場所まで、長い旅をした。'], ['0才', `${role[0]}: ${role[1]}`, 1], ['5才ごろ', '何千ものつなぎ目（シナプス）で、仲間とつながった。'], ['毎日', '電気の信号を送る。速いものは秒速100m以上。もう分裂はしない。']];
+    const span = rint(70, 100) * 365;
+    return {ev, end: ['持ち主と一生をともにした', '生まれ変わることなく、持ち主の一生のあいだ、ずっと働きつづけた。'], span, stats: []};
+  },
+  glia() {
+    const kind = [['オリゴデンドロサイト', '神経細胞の腕に、脂肪の膜をぐるぐる巻いた。電気の信号が何十倍も速く伝わるようになる。'], ['アストロサイト', '血管から栄養を受けとって、神経細胞に届けた。つなぎ目のそうじもする。'], ['ミクログリア', '脳の中を見回り、こわれた部品やばい菌を食べて片づけた。']][rint(0, 2)];
+    const ev = [['0日目', '脳の中で生まれた。'], ['1か月目', `${kind[0]}になった。${kind[1]}`, 1], ['何年も', '神経細胞のすぐそばで、目立たないけれど休みなく働いた。']];
+    const span = rint(3, 40) * 365;
+    return {ev, end: ['長く脳を支えた', `${fmtTime(span)}、神経細胞たちを支えつづけた。`], span, stats: []};
+  },
+  fat() {
+    const ev = [['0日目', 'おなかの皮ふの下で生まれた。'], ['1年目', '食べすぎた日は脂肪をためて、ふくらんだ。運動した日は脂肪を出して、しぼんだ。大人になると、脂肪細胞の数はあまり変わらず、大きさが変わる。'], ['3年目', '「もうおなかいっぱい」と脳に知らせる手紙（レプチン）を出した。']];
+    if (Math.random() < .3) ev.push(['5年目', '寒い冬。ためていた脂肪を出して、体を温めるエネルギーにした。', 1]);
+    const span = rint(5, 15) * 365;
+    return {ev, end: ['新しい脂肪細胞と交代した', `${fmtTime(span)}働いて交代した。脂肪細胞は1年に約10分の1ずつ入れかわる。`], span, stats: []};
+  },
+  muscle() {
+    const ev = [['0日目', 'たくさんの細胞が合体して生まれた。核が何百個もある、長さ数cmにもなる巨大な細胞だ。'], ['1年目', '「動け」の合図で、ぎゅっとちぢんだ。']];
+    if (Math.random() < .5) ev.push(['3年目', '持ち主が運動をがんばった！ 体の中の部品を増やして、太く強くなった。', 1]);
+    if (Math.random() < .3) ev.push(['8年目', '激しい運動で傷ついた。そばで眠っていた「衛星細胞」が目をさまして、直してくれた。', 1]);
+    const span = rint(10, 25) * 365;
+    return {ev, end: ['新しい筋肉にあとを任せた', `${fmtTime(span)}、体を動かしつづけた。`], span, stats: []};
+  },
+  heart() {
+    const ev = [['生まれる前', 'お母さんのおなかの中で、持ち主の心臓ができるときに生まれた。'], ['毎日', '1日に約10万回、仲間といっせいにちぢんで血液を送り出す。休みは一度もない。'], ['10年目', '心筋細胞はほとんど入れかわらない。1年に入れかわるのは1%くらいより少ない。']];
+    const span = rint(70, 100) * 365;
+    return {ev, end: ['一生、動きつづけた', '持ち主の一生のあいだ、一度も休まずに動きつづけた。'], span, stats: [['ちぢんだ回数', '約' + jp(span * 1e5) + '回']]};
+  },
+  beta() {
+    const ev = [['0日目', 'すい臓の「ランゲルハンス島」という小さな島で生まれた。'], ['毎日', 'ごはんのあと血液の糖が増えると、インスリンを出した。インスリンを受けとった細胞が糖を取りこんで、血液の糖が下がる。']];
+    if (Math.random() < .3) ev.push(['10年目', 'おやつを食べすぎた日が続いて、大いそがしだった。', 1]);
+    const span = rint(10, 40) * 365;
+    return {ev, end: ['長く血糖を見張った', `${fmtTime(span)}、血液の糖の見張りをつづけた。`], span, stats: []};
+  },
+  rod() {
+    const ev = [['生まれる前', '目の奥の網膜で生まれた。'], ['毎日', '先っぽの光を受ける部分を、少しずつ作りかえている。'], ['毎晩', '暗い夜道でも、わずかな光をつかまえた。色はわからないけれど、明るさはとても敏感。']];
+    const span = rint(70, 100) * 365;
+    return {ev, end: ['一生、光をつかまえた', '持ち主の一生のあいだ、暗やみの中の光を伝えつづけた。'], span, stats: []};
+  },
+  cone() {
+    const c = ['赤', '緑', '青'][rint(0, 2)];
+    const ev = [['生まれる前', '目の奥の網膜で生まれた。'], ['0才', `${c}っぽい光を担当することになった。3種類の錐体細胞の信号を比べて、脳が色を決める。`, 1], ['毎日', '明るいところで、くっきりした色を見せた。']];
+    const span = rint(70, 100) * 365;
+    return {ev, end: ['一生、色を見せた', '持ち主の一生のあいだ、世界の色を伝えつづけた。'], span, stats: []};
+  },
+  taste() {
+    const k = ['甘い', 'しょっぱい', 'すっぱい', '苦い', 'うま味'][rint(0, 4)];
+    const ev = [['0日目', '舌の「味蕾」というつぼみの中で生まれた。'], ['1日目', `「${k}」担当になった。`, 1], ['5日目', '給食の味を、脳に伝えた。']];
+    const span = rint(8, 12);
+    return {ev, end: ['新しい味細胞と交代した', `${span}日目ごろ、新しい味細胞と交代した。`], span, stats: []};
+  },
+  hair() {
+    const ev = [['生まれる前', '耳の奥のうずまき管で生まれた。'], ['0才', '音のふるえで頭の毛がゆれると、電気の信号に変えて脳へ送る。低い音・高い音のどちらを担当するかは、うずまきの場所で決まる。'], ['毎日', '友だちの声、音楽、鳥の声。たくさんの音をつかまえた。']];
+    let end, span = rint(70, 100) * 365;
+    if (Math.random() < .2) { ev.push(['15年目', 'とても大きな音を長く聞いて、毛がこわれてしまった。ヒトの有毛細胞は生えかわらない。', 1]); span = 15 * 365; end = ['大きな音でこわれた', 'こわれた有毛細胞は、もう生えかわらない。大きな音から耳を守ろう。']; }
+    else end = ['一生、音をつかまえた', '持ち主の一生のあいだ、音を伝えつづけた。'];
+    return {ev, end, span, stats: []};
+  },
+  other() {
+    const ev = [['0日目', '体のどこかで生まれた。骨、肺、腎臓、骨髄で育ち中の血液の細胞……。体には数百種類の細胞がいる。'], ['いつも', '自分の場所で、決められた仕事をこなした。']];
+    const span = rint(30, 3000);
+    return {ev, end: ['自分の場所で働いた', `${fmtTime(span)}働いた。どんな物語だったかは、これから書き足していく。`], span, stats: []};
+  },
+};
+
+// ===== 図鑑（このブラウザにだけ保存） =====
+let dex = {};
+try { dex = JSON.parse(localStorage.getItem('cell36-dex') || '{}') || {}; } catch (e) { dex = {}; }
+function saveDex() { try { localStorage.setItem('cell36-dex', JSON.stringify(dex)); } catch (e) {} }
+function renderDex() {
+  const got = TYPES.filter(t => dex[t.id]).length;
+  $('#dexCount').textContent = `${got} / ${TYPES.length}`;
+  $('#dex').innerHTML = TYPES.map(t => dex[t.id]
+    ? `<div>${svg(t)}<b>${esc(t.name)}</b>${dex[t.id]}回</div>`
+    : `<div class="no"><span class="q">?</span><b>？？？</b>${tier(t)[1]}</div>`).join('');
+}
+function renderMix() {
+  const top = [...TYPES].sort((a, b) => b.n - a.n);
+  $('#mixbar').innerHTML = top.map(t => `<i style="width:${t.n / TOTAL * 100}%;background:${t.color}" title="${esc(t.name)}"></i>`).join('');
+  $('#mixleg').innerHTML = top.slice(0, 6).map(t => `<span><i style="background:${t.color}"></i>${esc(t.name)}<em>${(t.n / TOTAL * 100).toFixed(1)}%</em></span>`).join('') +
+    `<span class="hint">ほかの${top.length - 6}種類は、合わせても ${(top.slice(6).reduce((s, t) => s + t.n, 0) / TOTAL * 100).toFixed(1)}%</span>`;
+}
+
+// ===== 画面 =====
+const stage = $('#stage');
+function pick() { let x = Math.random() * TOTAL; for (const t of TYPES) { x -= t.n; if (x < 0) return t; } return TYPES[0]; }
+function setHead(title, hint) { $('#stageTitle').textContent = title; $('#stageHint').textContent = hint || ''; }
+let timer = null;
+function stop() { clearTimeout(timer); timer = null; }
+
+function intro() {
+  stop(); setHead('誕生', '');
+  stage.innerHTML = `<div class="intro">
+    <div class="num">36<small>兆</small></div>
+    <p>大人の体は、約<b>36兆個</b>の細胞でできている。<br>そのうちのどれか1つとして、あなたは生まれる。<br>何の細胞になるかは選べない。数の多い細胞ほど、なりやすい。</p>
+    <div class="btns"><button class="primary big" id="go">生まれる</button><button id="go10">10回まとめて生まれる</button></div>
+  </div>`;
+  $('#go').onclick = () => roll(1);
+  $('#go10').onclick = () => roll(10);
+}
+
+function roll(count) {
+  stop(); setHead('誕生', '');
+  stage.innerHTML = `<div class="roll"><div><div class="lbl">体のどこかで……</div><div class="name" id="rn">？</div></div></div>`;
+  const results = Array.from({length: count}, pick);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let k = 0; const N = reduce ? 1 : 16;
+  const tick = () => {
+    k++;
+    $('#rn').textContent = TYPES[(Math.random() * TYPES.length) | 0].name;
+    if (k < N) timer = setTimeout(tick, 40 + k * k * 1.2);
+    else {
+      for (const t of results) dex[t.id] = (dex[t.id] || 0) + 1;
+      saveDex(); renderDex();
+      count === 1 ? reveal(results[0]) : showTen(results);
+    }
+  };
+  tick();
+}
+
+function oddsHtml(t) {
+  const [, label, cls] = tier(t), inv = TOTAL / t.n;
+  return `<span class="tier" style="background:var(--${cls})">${label}</span>
+    <dl class="odds">
+      <dt>なかまの数</dt><dd>約${jp(t.n)}個 <span class="conf">${t.conf === '△' ? '△ 大まかな見積もり' : '○ 研究の推定'}</span></dd>
+      <dt>なれる確率</dt><dd class="big">${inv < 1.5 ? `${Math.round(t.n / TOTAL * 100)}%` : `${jp(inv)}分の1`}</dd>
+      <dt>すむ場所</dt><dd>${esc(t.where)}</dd>
+    </dl>`;
+}
+
+function reveal(t) {
+  setHead('誕生', 'あなたが生まれた細胞');
+  stage.innerHTML = `<div class="card">
+      <div class="portrait">${svg(t)}</div>
+      <div><div class="nick">${esc(t.nick)}</div><h3>${esc(t.name)}に生まれた</h3>${oddsHtml(t)}<p class="job">${esc(t.job)}</p></div>
+    </div>
+    <div class="actions"><button class="primary big" id="live">一生をすごす</button><button id="again">生まれなおす</button></div>`;
+  $('#live').onclick = () => live(t);
+  $('#again').onclick = () => roll(1);
+}
+
+function live(t) {
+  stop();
+  const life = LIFE[t.id]();
+  setHead('一生', `${t.name}として`);
+  stage.innerHTML = `<div class="card"><div class="portrait">${svg(t)}</div><div><div class="nick">${esc(t.nick)}</div><h3>${esc(t.name)}</h3><p class="job">${esc(t.where)}で、${esc(t.job)}</p></div></div>
+    <div class="lifebar"><span>誕生</span><div class="bar"><i id="lb"></i></div><span>${fmtTime(life.span)}</span></div>
+    <ol class="timeline" id="tl"></ol>
+    <div id="endArea"></div>
+    <div class="actions" id="skipRow"><button id="skip">最後まで見る</button></div>`;
+  const tl = $('#tl'); let i = 0;
+  const step = () => {
+    if (i < life.ev.length) {
+      const [when, what, br] = life.ev[i++];
+      tl.insertAdjacentHTML('beforeend', `<li class="${br ? 'branch' : ''}"><span class="when">${esc(when)}</span><div class="what">${esc(what)}</div></li>`);
+      $('#lb').style.width = (i / (life.ev.length + 1) * 100) + '%';
+      tl.lastElementChild.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+      timer = setTimeout(step, 1700);
+    } else finish(t, life);
+  };
+  $('#skip').onclick = () => { stop(); while (i < life.ev.length) { const [when, what, br] = life.ev[i++]; tl.insertAdjacentHTML('beforeend', `<li class="${br ? 'branch' : ''}"><span class="when">${esc(when)}</span><div class="what">${esc(what)}</div></li>`); } finish(t, life); };
+  timer = setTimeout(step, 500);
+}
+
+function finish(t, life) {
+  stop(); $('#lb').style.width = '100%'; $('#skipRow').remove();
+  const [title, text] = life.end;
+  const stats = [['生きた時間', fmtTime(life.span)], ...life.stats, ['なれる確率', TOTAL / t.n < 1.5 ? Math.round(t.n / TOTAL * 100) + '%' : jp(TOTAL / t.n) + '分の1']];
+  const noCore = t.id === 'rbc' || t.id === 'plt';
+  $('#endArea').innerHTML = `<div class="ending">
+      <div class="stamp">${esc(title)}</div><p>${esc(text)}</p>
+      <div class="stats">${stats.map(([k, v]) => `<div>${esc(k)}<b>${esc(v)}</b></div>`).join('')}</div>
+      <p class="note">${noCore ? '赤血球と血小板には、核（設計図の図書館）も発電所（ミトコンドリア）もない。ふつうの細胞の中は' : 'この細胞の中では、こんな工場が動いている。'}<a href="cell.html">細胞工場をのぞく</a></p>
+      <div class="actions"><button class="primary big" id="again">もう一度生まれる</button><button id="copy">結果をコピー</button><span class="hint" id="copied"></span></div>
+    </div>`;
+  $('#endArea').scrollIntoView({block: 'nearest', behavior: 'smooth'});
+  $('#again').onclick = () => roll(1);
+  $('#copy').onclick = async () => {
+    const txt = `36兆分の1で「${t.name}」に生まれた（${stats[stats.length - 1][1]}）。${fmtTime(life.span)}生きて、${title}。`;
+    try { await navigator.clipboard.writeText(txt); $('#copied').textContent = 'コピーしたよ'; } catch (e) { $('#copied').textContent = txt; }
+  };
+}
+
+function showTen(list) {
+  setHead('10回まとめて', '');
+  const by = {}; for (const t of list) by[t.id] = (by[t.id] || 0) + 1;
+  const rbc = by.rbc || 0, best = list.reduce((a, b) => a.n < b.n ? a : b);
+  stage.innerHTML = `<div class="ten">${list.map((t, i) => `<div style="animation-delay:${i * 60}ms">${svg(t)}<b>${esc(t.name)}</b><span class="tier" style="background:var(--${tier(t)[2]})">${tier(t)[1]}</span></div>`).join('')}</div>
+    <p class="tensum">10回のうち、赤血球は<b>${rbc}回</b>。体の細胞の4つに3つは赤血球なので、10回生まれると、だいたい7〜8回は赤血球になる。いちばんめずらしかったのは<b>${esc(best.name)}</b>（${TOTAL / best.n < 1.5 ? Math.round(best.n / TOTAL * 100) + '%' : jp(TOTAL / best.n) + '分の1'}）。</p>
+    <div class="actions"><button class="primary big" id="liveBest">${esc(best.name)}の一生をすごす</button><button id="again10">もう一度10回</button><button id="back">ひとつずつ生まれる</button></div>`;
+  $('#liveBest').onclick = () => live(best);
+  $('#again10').onclick = () => roll(10);
+  $('#back').onclick = intro;
+}
+
+renderMix(); renderDex(); intro();
+</script>
+</body>
+</html>
